@@ -47,5 +47,6 @@ export default NextAuth({
     signIn: '/auth/signin',  // Specify the custom sign-in page
     error: '/auth/error',    // Specify the error page
   },
+  secret: process.env.NEXTAUTH_SECRET,
   // Additional NextAuth configuration...
 });
