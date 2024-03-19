@@ -16,8 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         try {
             // Here, add the logic to authenticate the user with Firestore
-            const usersRef = collection(firestore, 'users');
-            const q = query(usersRef, where('username', '==', username));
+            const usersRef = collection(firestore, 'HCS');
+            const q = query(usersRef, where('staffMailAddress', '==', username));
             const userSnapshot = await getDocs(q);
 
             if (userSnapshot.empty) {

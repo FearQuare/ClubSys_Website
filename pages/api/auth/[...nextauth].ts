@@ -20,8 +20,8 @@ export default NextAuth({
         if (!credentials) return null;
 
         // Here, you add the logic to check the credentials against Firestore
-        const usersRef = collection(firestore, 'users');
-        const q = query(usersRef, where('username', '==', credentials.username));
+        const usersRef = collection(firestore, 'HCS');
+        const q = query(usersRef, where('staffMailAddress', '==', credentials.username));
         const userSnapshot = await getDocs(q);
 
         if (userSnapshot.empty) {
