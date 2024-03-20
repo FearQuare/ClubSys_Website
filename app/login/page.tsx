@@ -50,7 +50,7 @@ export default function LoginPage() {
               type="text"
               autoComplete="username"
               required
-              className="bg-color4 text-white mt-1 block w-full px-3 py-3 border border-color4 rounded-full focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="bg-gradient-to-br from-gray-900 to-gray-600 text-white mt-1 block w-full px-3 py-3 border border-color4 rounded-full focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="EkoID"
