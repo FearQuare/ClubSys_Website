@@ -65,7 +65,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               required
-              className="bg-gradient-to-br from-gray-600 to-gray-900 text-white mt-1 block w-full px-3 py-3 border border-color4 rounded-full shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="bg-gradient-to-br from-gray-600 to-gray-900 text-white mt-1 block w-full px-3 py-3 border border-color4 rounded-full focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="password"
