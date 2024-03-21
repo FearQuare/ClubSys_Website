@@ -19,3 +19,5 @@ if(!admin.apps.length) {
         credential: admin.credential.cert(serviceAccount),
     });
 }
+
+export default admin.firestore;
