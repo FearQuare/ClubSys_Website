@@ -32,7 +32,7 @@ export default NextAuth({
         // You should implement secure password verification here
         // For demonstration, we're just checking if the passwords match
         if (user.password === credentials.password) {
-          return { id: user.id, name: user.username, email: user.email };
+          return { id: user.id, name: user.username };
         } else {
           throw new Error('Invalid credentials');
         }
@@ -40,11 +40,18 @@ export default NextAuth({
     }),
   ],
   session: {
-    // Define session behavior here
+    strategy: 'jwt',
+    maxAge: 60,
   },
-  pages: {
-    signIn: '/auth/signin',  // Specify the custom sign-in page
-    error: '/auth/error',    // Specify the error page
+  callbacks: {
+    async session({ session, token }) {
+      if (session.user) { // Ensures session.user is not undefined
+        session.accessToken = token.accessToken as string | undefined; // Assuming you set this value somewhere else
+        session.user.id = token.id as string; // Ensures token.id is treated as a string
+      }
+      
+      return session;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   // Additional NextAuth configuration...

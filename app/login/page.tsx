@@ -20,9 +20,10 @@ export default function LoginPage() {
 
     // Update the login status based on the result
     if (result?.error) {
-      setLoginStatus({ message: 'Login failed: Invalid credentials.', status: 'error' });
+      //setLoginStatus({ message: 'Login failed: Invalid credentials.', status: 'error' });
+      alert(result.error);
     } else {
-      setLoginStatus({ message: 'Login successful!', status: 'success' });
+      window.location.href = '/';
       // Redirect or perform additional tasks on successful login
       // window.location.href = '/main-page'; // Redirect the user to another page
     }
