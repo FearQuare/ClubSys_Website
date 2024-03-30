@@ -2,9 +2,10 @@
 import Image from "next/image";
 import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginStatus, setLoginStatus] = useState({ message: '', status: '' });
 
@@ -13,16 +14,18 @@ export default function LoginPage() {
 
     // Attempting to sign in
     const result = await signIn('credentials', {
-      redirect: false, // Prevent default redirect
-      username,
+      redirect: true,
+      callbackUrl: '/',
+      email,
       password,
     });
 
     // Update the login status based on the result
     if (result?.error) {
-      setLoginStatus({ message: 'Login failed: Invalid credentials.', status: 'error' });
+      //setLoginStatus({ message: 'Login failed: Invalid credentials.', status: 'error' });
+      alert(result.error);
     } else {
-      setLoginStatus({ message: 'Login successful!', status: 'success' });
+      window.location.href = '/';
       // Redirect or perform additional tasks on successful login
       // window.location.href = '/main-page'; // Redirect the user to another page
     }
@@ -51,8 +54,8 @@ export default function LoginPage() {
               autoComplete="username"
               required
               className="bg-gradient-to-br from-gray-900 to-gray-600 text-white mt-1 block w-full px-3 py-3 border border-color4 rounded-full focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="EkoID"
             />
           </div>
@@ -73,7 +76,11 @@ export default function LoginPage() {
           </div>
 
           {/* Submit Button */}
-          <button type="submit" className="bg-gradient-to-r from-color3 to-color1 group relative w-full flex justify-center py-2 px-10 border border-transparent text-sm font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button 
+            type="submit"
+            disabled={!email || !password}
+            className="bg-gradient-to-r from-color3 to-color1 group relative w-full flex justify-center py-2 px-10 border border-transparent text-sm font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
             Confirm
           </button>
 

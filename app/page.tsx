@@ -1,5 +1,22 @@
-export default function Home(){
-    return(
-        <p><a href="/login">Login</a></p>
-    )
+// app/page.tsx
+'use client'
+import { signOut ,useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+
+export default function Home() {
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/login')
+    },
+  });
+
+  return (
+    <div className='p-8'>
+      <div>{session?.data?.user?.email}</div>
+      <button onClick={() => signOut()}>Logout</button>
+    </div>
+  );
 }
+
+Home.requireAuth = true
