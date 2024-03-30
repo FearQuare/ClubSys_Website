@@ -1,26 +1,22 @@
 // app/page.tsx
 'use client'
-import { useSession } from 'next-auth/react';
-import useSessionCountdown from '@/hooks/useSessionCountdown';
+import { signOut ,useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  const { data: session, status } = useSession();
-  const timeLeft = useSessionCountdown();
-
-  if (status === "loading") {
-    return <p>Loading...</p>; // Show a loading state while the session is being determined
-  }
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/login')
+    },
+  });
 
   return (
-    <div>
-      {session ? (
-        <>
-          <p>Welcome, {session.user?.name || 'Guest'}</p>
-          <p>Session ends in: {timeLeft} seconds</p>
-        </>
-      ) : (
-        <p><a href="/login">Login</a></p>
-      )}
+    <div className='p-8'>
+      <div>{session?.data?.user?.email}</div>
+      <button onClick={() => signOut()}>Logout</button>
     </div>
   );
 }
+
+Home.requireAuth = true
