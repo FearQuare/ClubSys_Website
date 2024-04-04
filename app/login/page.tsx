@@ -12,7 +12,6 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    // Attempting to sign in
     const result = await signIn('credentials', {
       redirect: true,
       callbackUrl: '/',
@@ -20,19 +19,14 @@ export default function LoginPage() {
       password,
     });
 
-    // Update the login status based on the result
     if (result?.error) {
-      //setLoginStatus({ message: 'Login failed: Invalid credentials.', status: 'error' });
       alert(result.error);
     } else {
       window.location.href = '/';
-      // Redirect or perform additional tasks on successful login
-      // window.location.href = '/main-page'; // Redirect the user to another page
     }
   };
 
   return (
-    // Define the grid with two rows and center the content in both axes
     <main className="flex flex-col min-h-screen bg-gradient-to-t from-color2 to-color1 justify-between">
       <div className="flex justify-center items-center mt-20">
         <Image
