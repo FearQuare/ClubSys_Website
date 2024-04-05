@@ -49,7 +49,6 @@ export default NextAuth({
   },
   session: {
     strategy: 'jwt',
-    maxAge: 60,
   },
   pages: {
     signIn: '/login'
