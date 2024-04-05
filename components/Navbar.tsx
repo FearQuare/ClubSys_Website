@@ -5,6 +5,8 @@ import IconButton from '@mui/material/IconButton';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import { signOut } from "next-auth/react"
 
 const Navbar = () => {
   const [staffName, setStaffName] = useState('');
@@ -13,6 +15,7 @@ const Navbar = () => {
   const buttons = [
     <IconButton key="profile" className='text-black text-3xl'><PersonOutlineIcon/></IconButton>,
     <IconButton key="notification" className='text-black text-3xl'><NotificationsNoneIcon/></IconButton>,
+    <IconButton key="notification" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()}/></IconButton>,
   ];
 
   useEffect(() => {
