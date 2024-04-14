@@ -17,6 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase only if there are no initialized apps
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+console.log(db);
 const auth = getAuth();
 
 export { app, auth, db};
