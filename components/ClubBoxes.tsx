@@ -11,6 +11,7 @@ type Club = {
     studentID: string;
   }[];
   clubDescription: string;
+  clubIcon: string;
   clubName: string;
   feedbacks: { feedback: string; studentID: string }[];
   memberNum: number;
@@ -22,26 +23,33 @@ const ClubBoxes: React.FC = () => {
 
   useEffect(() => {
     async function fetchClubs() {
-      const response = await fetch('/api/clubs');
-      const data: Club[] = await response.json();
-      setClubs(data);
+      try {
+        const response = await fetch('/api/clubs');
+        if (!response.ok) throw new Error('Failed to fetch clubs');
+        const clubs: Club[] = await response.json();
+        setClubs(clubs);
+      } catch (error) {
+        console.error('Error fetching clubs:', error);
+      }
     }
 
-    fetchClubs();
+    fetchClubs().then(() => {
+      console.log(clubs);
+    });
   }, []);
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
       {clubs.map((club) => (
-        <Link 
-          href={`/clubs/${club.id}`} 
-          key={club.id} 
+        <Link
+          href={`/clubs/${club.id}`}
+          key={club.id}
           className="block bg-color3 rounded-lg overflow-hidden shadow-lg hover:border-2 border-blue-600 transition-colors cursor-pointer w-72 h-64"
         >
           <div className="p-4 flex flex-col items-center">
             <div className="bg-white rounded-full w-32 h-32 mb-4 flex items-center justify-center">
-              {/* Placeholder for club icon */}
-              {/* Add img tag here if you have icons for clubs */}
+              <img src={club.clubIcon} alt={`${club.clubName} logo`} className="w-full h-full rounded-full object-cover" onError={(e) => (e.currentTarget.src = 'fallback-image-url')} />
             </div>
             <h3 className="text-white text-lg text-center">{club.clubName}</h3>
             {/* Add other club details you want to display */}

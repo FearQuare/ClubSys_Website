@@ -3,6 +3,7 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -17,7 +18,7 @@ const firebaseConfig = {
 // Initialize Firebase only if there are no initialized apps
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
-console.log(db);
 const auth = getAuth();
+const storage = getStorage(app);
 
-export { app, auth, db};
+export { app, auth, db, storage };
