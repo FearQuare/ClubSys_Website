@@ -7,15 +7,17 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { signOut } from "next-auth/react"
+import { useSearch } from '@/contexts/SearchContext';
 
 const Navbar = () => {
   const [staffName, setStaffName] = useState('');
   const [staffLastName, setStaffLastName] = useState('');
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const buttons = [
-    <IconButton key="profile" className='text-black text-3xl'><PersonOutlineIcon/></IconButton>,
-    <IconButton key="notification" className='text-black text-3xl'><NotificationsNoneIcon/></IconButton>,
-    <IconButton key="notification" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()}/></IconButton>,
+    <IconButton key="profile" className='text-black text-3xl'><PersonOutlineIcon /></IconButton>,
+    <IconButton key="notification" className='text-black text-3xl'><NotificationsNoneIcon /></IconButton>,
+    <IconButton key="notification" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()} /></IconButton>,
   ];
 
   useEffect(() => {
@@ -43,6 +45,8 @@ const Navbar = () => {
             type="text"
             placeholder="Search club or team name"
             className="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:border-blue-500 shadow-md w-full text-center"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <div className="absolute left-0 top-0 mt-2 ml-3">
             <SearchIcon />

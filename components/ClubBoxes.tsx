@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearch } from '@/contexts/SearchContext';
 
 type Club = {
   id: string;
@@ -20,6 +21,7 @@ type Club = {
 
 const ClubBoxes: React.FC = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     async function fetchClubs() {
@@ -38,6 +40,10 @@ const ClubBoxes: React.FC = () => {
     });
   }, []);
 
+  const filteredClubs =  clubs.filter(club =>
+    club.clubName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
@@ -50,7 +56,7 @@ const ClubBoxes: React.FC = () => {
           <div>Create Club</div>
         </div>
       </Link>
-      {clubs.map((club) => (
+      {filteredClubs.map((club) => (
         <Link
           href={`/clubs/${club.id}`}
           key={club.id}

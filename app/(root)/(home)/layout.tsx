@@ -1,9 +1,11 @@
+import React from 'react';
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../../globals.css";
 import SessionProvider from "../../SessionProvider";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
+import { SearchProvider } from '@/contexts/SearchContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,17 +22,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
-            <Navbar />
-            <main className="mt-20 ml-5 flex-1 overflow-auto">
-              <SessionProvider>
-                {children}
-              </SessionProvider>
-            </main>
+        <SearchProvider>
+          <div className="flex">
+            <Sidebar />
+            <div className="flex-1 flex flex-col">
+              <Navbar />
+              <main className="mt-20 ml-5 flex-1 overflow-auto">
+                <SessionProvider>
+                  {children}
+                </SessionProvider>
+              </main>
+            </div>
           </div>
-        </div>
+        </SearchProvider>
       </body>
     </html>
   );
