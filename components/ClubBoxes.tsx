@@ -41,6 +41,15 @@ const ClubBoxes: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+      <Link 
+        href="/create-club"
+        className="block bg-color3 rounded-lg overflow-hidden shadow-lg hover:border-2 border-blue-600 transition-colors cursor-pointer w-72 h-64 flex items-center justify-center text-white text-center"
+      >
+        <div>
+          <div className="text-5xl">+</div>
+          <div>Create Club</div>
+        </div>
+      </Link>
       {clubs.map((club) => (
         <Link
           href={`/clubs/${club.id}`}
