@@ -9,13 +9,11 @@ interface Club {
     clubIcon: string;
 }
 
-// Define a type for expected route parameters
 interface RouteParams {
     clubId?: string;
 }
 
 const ClubDetailsPage = () => {
-    // Use type assertion here
     const { clubId } = useParams() as RouteParams;
 
     const [club, setClub] = useState<Club | null>(null);
@@ -23,7 +21,7 @@ const ClubDetailsPage = () => {
     const [error, setError] = useState<string>('');
 
     useEffect(() => {
-        if (!clubId) return; // Make sure clubId is present
+        if (!clubId) return;
 
         const fetchClub = async () => {
             setLoading(true);
