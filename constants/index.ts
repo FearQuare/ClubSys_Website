@@ -4,7 +4,6 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import EventIcon from '@mui/icons-material/Event';
 import DescriptionIcon from '@mui/icons-material/Description';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 export const sidebarLinks = [
     {
