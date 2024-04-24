@@ -37,9 +37,4 @@ export const sidebarLinks = [
         IconComponent: NotificationsIcon,
         route: '/send-notification',
     },
-    {
-        label: 'Upload File',
-        IconComponent: UploadFileIcon,
-        route: '/upload-file',
-    },
 ];
