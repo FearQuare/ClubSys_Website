@@ -23,9 +23,10 @@ const Documents = () => {
   const uploadFile = () => {
     if (!fileUpload) return;
     const fileRef = ref(storage, `deneme/${fileUpload.name + v4()}`);
-    uploadBytes(fileRef, fileUpload).then(() => {
-      alert("File Uploaded");
-      // Refresh the file list after upload
+    uploadBytes(fileRef, fileUpload).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        setFileList((prev) => [...prev, url])
+      })
       fetchFileList();
     });
   }
@@ -34,14 +35,14 @@ const Documents = () => {
     listAll(fileListRef).then((response) => {
       const urls = response.items.map(item => getDownloadURL(item));
       Promise.all(urls).then(urls => {
-        setFileList(urls); // Set all URLs at once, avoiding duplicates
+        setFileList(urls);
       });
     });
   };
 
   useEffect(() => {
     fetchFileList();
-  }, []); // Dependency array remains empty to avoid re-fetching
+  }, []);
 
   return (
     <div>
