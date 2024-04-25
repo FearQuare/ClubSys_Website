@@ -73,7 +73,6 @@ const Documents = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 90 },
     {
       field: 'clubID',
       headerName: 'Club Name',
