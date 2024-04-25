@@ -104,6 +104,7 @@ const Documents = () => {
       type: 'actions',
       getActions: (params) => [
         <GridActionsCellItem
+          key={params.id}
           icon={<DeleteIcon />}
           label="Delete"
           onClick={() => handleDelete(String(params.id), String(params.row.filePath))}
