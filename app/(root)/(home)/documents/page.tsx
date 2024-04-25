@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { storage, db } from '@/firebaseConfig';
-import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -14,8 +14,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import { format } from 'date-fns';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -54,12 +55,13 @@ type Document = {
   fileName: string;
   clubID: string;
   fileURL: string;
+  filePath: string;
 };
 
 type FileUploadState = File | null;
 
 const Documents = () => {
-  const { data: session, status } = useSession({
+  useSession({
     required: true,
     onUnauthenticated() {
       redirect('/login');
@@ -67,7 +69,6 @@ const Documents = () => {
   });
 
   const [fileUpload, setFileUpload] = useState<FileUploadState>(null);
-  const [fileList, setFileList] = useState<string[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClubID, setSelectedClubID] = useState('');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -76,9 +77,8 @@ const Documents = () => {
     {
       field: 'clubID',
       headerName: 'Club Name',
-      width: 150, // Adjusted width for better display
+      width: 150,
       renderCell: (params) => {
-        // Find the club by ID and return the clubName
         const club = clubs.find(club => club.id === params.value);
         return <span>{club ? club.clubName : 'Not found'}</span>;
       }
@@ -98,6 +98,17 @@ const Documents = () => {
       headerName: 'File URL',
       width: 250,
       renderCell: (params) => <a href={params.value} target="_blank" rel="noopener noreferrer">Open File</a>
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Delete"
+          onClick={() => handleDelete(String(params.id), String(params.row.filePath))}
+        />
+      ],
     },
   ];
 
@@ -122,30 +133,36 @@ const Documents = () => {
 
   const uploadFile = async () => {
     if (!fileUpload || !selectedClubID) return;
-    const fileRef = ref(storage, `deneme/${fileUpload.name}-${uuidv4()}`);
+    const fileRef = ref(storage, `Documents/${selectedClubID}/${fileUpload.name}-${uuidv4()}`);
     const snapshot = await uploadBytes(fileRef, fileUpload);
     const fileURL = await getDownloadURL(snapshot.ref);
+    const filePath = fileRef.fullPath;
 
     await addDoc(collection(db, 'Documents'), {
       clubID: selectedClubID,
       dateTime: serverTimestamp(),
       fileName: fileUpload.name,
-      fileURL: fileURL
+      fileURL: fileURL,
+      filePath: filePath
     });
-
-    fetchFileList();
   };
 
-  const fetchFileList = async () => {
-    const fileListRef = ref(storage, "deneme/");
-    const response = await listAll(fileListRef);
-    const urls = await Promise.all(response.items.map(item => getDownloadURL(item)));
-    setFileList(urls);
-  };
 
-  useEffect(() => {
-    fetchFileList();
-  }, []);
+  const handleDelete = async (id: string, filePath: string) => {
+    try {
+      await deleteDoc(doc(db, 'Documents', id));
+
+      const fileRef = ref(storage, filePath);
+
+      await deleteObject(fileRef);
+
+      setDocuments(documents.filter((doc) => doc.id !== id));
+      alert('Document successfully deleted.');
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      alert('Failed to delete document.');
+    }
+  };
 
   return (
     <div>
