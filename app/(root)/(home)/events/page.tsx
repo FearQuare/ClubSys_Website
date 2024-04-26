@@ -2,7 +2,7 @@
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { GridColDef, DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
+import { GridColDef, DataGrid, GridActionsCellItem, GridRowParams } from '@mui/x-data-grid';
 import { format } from 'date-fns';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CloseIcon from '@mui/icons-material/Close';
@@ -42,13 +42,21 @@ const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
 
-  const handleApprove = async (params: string) => {
-    const eventRef = doc(db, "Events", params);
+  const handleApprove = async (eventId: string) => {
+    const isUploaded = documents.some(document => document.eventID === eventId);
+  
+    if (!isUploaded) {
+      alert("The related event document should be uploaded to approve this event.");
+      return;
+    }
+  
+    const eventRef = doc(db, "Events", eventId);
     try {
       await updateDoc(eventRef, {
         isApproved: true
       });
       alert('Event successfully accepted!');
+      window.location.reload();
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -61,6 +69,7 @@ const Events = () => {
         isApproved: false
       });
       alert('Event successfully rejected!');
+      window.location.reload();
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -100,6 +109,11 @@ const Events = () => {
       }
     },
     {
+      field: 'isApproved',
+      headerName: 'Is Approved',
+      width: 150,
+    },
+    {
       field: 'actions',
       type: 'actions',
       getActions: (params) => [
@@ -136,6 +150,27 @@ const Events = () => {
       .catch(error => console.error('Failed to fetch documents', error));
   }, [])
 
+  const getRowClassName = (params: GridRowParams) => {
+    const isUploaded = documents.some(document => document.eventID === params.row.id);
+    const event = events.find(event => event.id === params.row.id);
+
+    if (event && event.isApproved !== undefined && event.isApproved !== null) {
+      if (event.isApproved) {
+        return 'bg-green-500 text-white';
+      } else {
+        if (!isUploaded) {
+          return 'bg-red-500 text-white';
+        }
+        return 'bg-yellow-500 text-white';
+      }
+    } else {
+      if(!isUploaded){
+        return 'bg-red-400';
+      }
+      return '';
+    }
+  }
+
   return (
     <div className='pl-20 mt-10'>
       <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Events</h1>
@@ -149,10 +184,7 @@ const Events = () => {
             },
           }}
           pageSizeOptions={[25, 40]}
-          getRowClassName={(params) => {
-            const isUploaded = documents.some(document => document.eventID === params.row.id);
-            return isUploaded ? 'bg-green-100' : 'bg-yellow-100';
-          }}
+          getRowClassName={getRowClassName}
           className='mt-4'
         />
       </div>
