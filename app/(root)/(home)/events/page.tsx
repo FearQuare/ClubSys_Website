@@ -2,8 +2,12 @@
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { GridColDef, DataGrid } from '@mui/x-data-grid';
+import { GridColDef, DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { format } from 'date-fns';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CloseIcon from '@mui/icons-material/Close';
+import { db } from '@/firebaseConfig';
+import { doc, updateDoc } from 'firebase/firestore';
 
 type Event = {
   id: string;
@@ -13,6 +17,7 @@ type Event = {
     _seconds: number;
     _nanoseconds: number;
   };
+  isApproved: boolean;
 }
 
 type Document = {
@@ -36,6 +41,30 @@ const Events = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+
+  const handleApprove = async (params: string) => {
+    const eventRef = doc(db, "Events", params);
+    try {
+      await updateDoc(eventRef, {
+        isApproved: true
+      });
+      alert('Event successfully accepted!');
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  }
+
+  const handleReject = async (params: string) => {
+    const eventRef = doc(db, "Events", params);
+    try {
+      await updateDoc(eventRef, {
+        isApproved: false
+      });
+      alert('Event successfully rejected!');
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  }
 
   const columns: GridColDef[] = [
     {
@@ -69,7 +98,25 @@ const Events = () => {
         const isUploaded = documents.some(document => document.eventID === params.row.id);
         return <span>{isUploaded ? 'Uploaded' : 'Not Uploaded'}</span>;
       }
-    },    
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      getActions: (params) => [
+        <GridActionsCellItem
+          key={params.id}
+          icon={<CheckBoxIcon />}
+          label="Approve"
+          onClick={() => handleApprove(String(params.id))}
+        />,
+        <GridActionsCellItem
+          key={params.id}
+          icon={<CloseIcon />}
+          label="Reject"
+          onClick={() => handleReject(String(params.id))}
+        />
+      ]
+    },
   ];
 
   useEffect(() => {
@@ -98,7 +145,7 @@ const Events = () => {
           columns={columns}
           initialState={{
             pagination: {
-              paginationModel: { page: 0, pageSize: 25},
+              paginationModel: { page: 0, pageSize: 25 },
             },
           }}
           pageSizeOptions={[25, 40]}
@@ -106,7 +153,7 @@ const Events = () => {
             const isUploaded = documents.some(document => document.eventID === params.row.id);
             return isUploaded ? 'bg-green-100' : 'bg-yellow-100';
           }}
-          className='mt-4'         
+          className='mt-4'
         />
       </div>
     </div>
