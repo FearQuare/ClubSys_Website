@@ -44,7 +44,7 @@ const ClubBoxes: React.FC = () => {
 
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1 p-1">
       <Link
         href="/create-club"
         className="bg-color3 rounded-lg overflow-hidden shadow-lg hover:border-2 border-blue-600 transition-colors cursor-pointer w-72 h-64 flex items-center justify-center text-white text-center"
