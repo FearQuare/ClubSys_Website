@@ -23,6 +23,7 @@ type Event = {
 type Document = {
   id: string;
   eventID: string;
+  fileURL: string;
 }
 
 type Club = {
@@ -100,12 +101,15 @@ const Events = () => {
       },
     },
     {
-      field: 'eventID',
+      field: 'id',
       headerName: 'Uploaded',
       width: 120,
       renderCell: (params) => {
-        const isUploaded = documents.some(document => document.eventID === params.row.id);
-        return <span>{isUploaded ? 'Uploaded' : 'Not Uploaded'}</span>;
+        const document = documents.find(document => document.eventID === params.id);
+        if (document) {
+          return <a href={document.fileURL} target="_blank" rel="noopener noreferrer">View Document</a>;
+        }
+        return <span>Not Uploaded</span>;
       }
     },
     {
@@ -131,7 +135,7 @@ const Events = () => {
         />
       ]
     },
-  ];
+  ];  
 
   useEffect(() => {
     fetch('/api/clubs')
@@ -156,12 +160,12 @@ const Events = () => {
 
     if (event && event.isApproved !== undefined && event.isApproved !== null) {
       if (event.isApproved) {
-        return 'bg-green-500 text-white';
+        return 'bg-green-500';
       } else {
         if (!isUploaded) {
-          return 'bg-red-500 text-white';
+          return 'bg-red-500';
         }
-        return 'bg-yellow-500 text-white';
+        return 'bg-yellow-500';
       }
     } else {
       if(!isUploaded){
