@@ -205,17 +205,16 @@ const Documents = () => {
         </Button>
         <Button onClick={uploadFile}>Submit Upload</Button>
       </div>
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ height: '100%', width: '100%' }}>
         <DataGrid
           rows={documents}
           columns={columns}
           initialState={{
             pagination: {
-              paginationModel: { page: 0, pageSize: 5 },
+              paginationModel: { page: 0, pageSize: 25 },
             },
           }}
-          pageSizeOptions={[5, 10]}
-          checkboxSelection
+          pageSizeOptions={[25, 40]}
         />
       </div>
     </div>

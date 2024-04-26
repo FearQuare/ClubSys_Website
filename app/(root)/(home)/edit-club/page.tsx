@@ -16,8 +16,8 @@ const EditClub = () => {
   }
 
   return (
-    <div>Edit Club</div>
+    <div>Events</div>
   )
 }
 
-export default EditClub
+export default EditClub;
