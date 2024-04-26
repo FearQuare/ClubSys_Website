@@ -16,7 +16,7 @@ const EditClub = () => {
   }
 
   return (
-    <div>Events</div>
+    <div>Edit Clubs</div>
   )
 }
 
