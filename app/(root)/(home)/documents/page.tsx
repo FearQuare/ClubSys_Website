@@ -146,6 +146,8 @@ const Documents = () => {
       fileURL: fileURL,
       filePath: filePath
     });
+
+    window.location.reload();
   };
 
 
@@ -166,9 +168,10 @@ const Documents = () => {
   };
 
   return (
-    <div>
+    <div className='pl-20 mt-10'>
+      <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Documents</h1>
       <div className='flex items-center space-x-1'>
-        <FormControl sx={{ m: 1, minWidth: 120 }}>
+        <FormControl sx={{ m: 0, minWidth: 200 }} className='mt-4'>
           <InputLabel id="clubs-label">Select Club</InputLabel>
           <Select
             labelId='clubs-label'
@@ -194,18 +197,18 @@ const Documents = () => {
           variant='contained'
           tabIndex={-1}
           startIcon={<CloudUploadIcon />}
-          className="px-4 py-4"
+          className="px-4 py-4 mt-4"
         >
           Upload file
           <VisuallyHiddenInput
             type="file"
             onChange={handleFileChange}
-            onClick={(e) => e.currentTarget.value = ''} // Reset file input
+            onClick={(e) => e.currentTarget.value = ''}
           />
         </Button>
-        <Button onClick={uploadFile}>Submit Upload</Button>
+        <Button onClick={uploadFile} className='mt-4'>Submit Upload</Button>
       </div>
-      <div style={{ height: '100%', width: '100%' }}>
+      <div style={{ height: '93%', width: '93%' }}>
         <DataGrid
           rows={documents}
           columns={columns}
@@ -215,6 +218,7 @@ const Documents = () => {
             },
           }}
           pageSizeOptions={[25, 40]}
+          className='mt-4'
         />
       </div>
     </div>

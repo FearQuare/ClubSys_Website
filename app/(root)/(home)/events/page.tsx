@@ -90,8 +90,9 @@ const Events = () => {
   }, [])
 
   return (
-    <div>
-      <div style={{ height: '%100', width: '%100' }}>
+    <div className='pl-20 mt-10'>
+      <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Events</h1>
+      <div style={{ height: '93%', width: '93%' }}>
         <DataGrid
           rows={events}
           columns={columns}
@@ -104,7 +105,8 @@ const Events = () => {
           getRowClassName={(params) => {
             const isUploaded = documents.some(document => document.eventID === params.row.id);
             return isUploaded ? 'bg-green-100' : 'bg-yellow-100';
-          }}          
+          }}
+          className='mt-4'         
         />
       </div>
     </div>

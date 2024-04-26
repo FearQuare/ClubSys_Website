@@ -15,7 +15,7 @@ const SendNotification = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div>Send Notification</div>
+    <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5 pl-20 mt-10'>Send Notification</h1>
   )
 }
 
