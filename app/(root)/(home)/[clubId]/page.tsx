@@ -118,7 +118,7 @@ const ClubDetailsPage = () => {
         <div className='pl-20 mt-10 flex flex-row'>
             <div className='flex flex-col text-center ml-10'>
                 <Avatar alt="Club Image" src={club.clubIcon} sx={{ width: 245, height: 245 }} className='shadow-xl border-solid border-2 border-sky-500' />
-                <h1 className='mt-5 text-3xl font-semibold'>{club.clubName}</h1>
+                <h1 className='mt-5 text-3xl font-semibold max-w-60'>{club.clubName}</h1>
                 <p><span className='text-blue-600 font-semibold'>President: </span>{president ? `${president.firstName} ${president.lastName}` : 'Loading President...'}</p>
             </div>
             <div className='flex flex-col ml-16 mt-10 max-w-4xl text-lg'>
