@@ -21,7 +21,8 @@ import FormControl from '@mui/material/FormControl';
 import Autocomplete from '@mui/material/Autocomplete';
 import { storage, db } from '@/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import Alert, { AlertColor } from '@mui/material/Alert';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -93,6 +94,14 @@ const CreateClub = () => {
     const [clubDescription, setClubDescription] = useState<string>('');
     const [students, setStudents] = useState<Student[]>([]);
     const [selectedStudentID, setSelectedStudentID] = useState<string>('');
+    const [alert, setAlert] = useState<{ show: boolean; severity: AlertColor | undefined; message: string }>({
+        show: false,
+        severity: undefined,
+        message: ''
+    });
+    const [isClubNameValid, setIsClubNameValid] = useState(true);
+    const [isAdvisorValid, setIsAdvisorValid] = useState(true);
+    const [isPresidentValid, setIsPresidentValid] = useState(true);
 
     useSession({
         required: true,
@@ -132,11 +141,41 @@ const CreateClub = () => {
     };
 
     const handleSubmit = async () => {
+        let isValid = true;
+
+        if (!clubName.trim()) {
+            setIsClubNameValid(false);
+            setAlert({ show: true, severity: 'error', message: 'You cannot leave Club Name field empty!' });
+            isValid = false;
+        }
+
+        if (!selectedAdvisorID) {
+            setIsAdvisorValid(false);
+            setAlert({ show: true, severity: 'error', message: 'Selecting an Advisor is required.' });
+            isValid = false;
+        }
+
+        if (!selectedStudentID) {
+            setIsPresidentValid(false);
+            setAlert({ show: true, severity: 'error', message: 'Selecting a President is required.' });
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const querySnapshot = await getDocs(query(collection(db, 'Clubs'), where('clubName', '==', clubName.trim())));
+        if (!querySnapshot.empty) {
+            setAlert({ show: true, severity: 'error', message: 'This club name already exists try another name.' });
+            setIsClubNameValid(false);
+            return;
+        }
+
         if (editorRef.current && image) {
             const canvas = editorRef.current.getImageScaledToCanvas();
             canvas.toBlob(async (blob) => {
                 if (!blob) {
                     console.error('Canvas blob is null');
+                    setAlert({ show: true, severity: 'error', message: 'Failed to get the image blob.' });
                     return;
                 }
                 try {
@@ -161,19 +200,27 @@ const CreateClub = () => {
                     };
 
                     const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
-                    console.log("Club created with ID: ", docRef.id);
+                    setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
+
+                    setClubName('');
+                    setSelectedAdvisorID('');
+                    setClubDescription('');
+                    setSelectedStudentID('');
+                    setImage('/add-image.png');
+                    setScale(1);
+                    setPosition({ x: 0.5, y: 0.5 });
+                    setRotate(0);
+                    setBorderRadius(50);
+                    setIsClubNameValid(true);
+                    setIsAdvisorValid(true);
+                    setIsPresidentValid(true);
                 } catch (error) {
                     console.error('Failed to upload image to Firebase Storage', error);
+                    setAlert({ show: true, severity: 'error', message: 'Failed to upload image to Firebase Storage.' });
                 }
             }, 'image/png');
         }
     };
-
-    const handleClubName = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newName = event.target.value;
-        setClubName(newName);
-        console.log(newName);
-    }
 
     return (
         <div className='pl-20 mt-10'>
@@ -239,17 +286,30 @@ const CreateClub = () => {
                                 required
                                 id="outlined-required"
                                 label="Club Name"
-                                onChange={handleClubName}
+                                value={clubName}
+                                error={!isClubNameValid}
+                                helperText={!isClubNameValid ? (clubName.trim() ? 'This club name already exists try another name.' : 'You cannot leave Club Name field empty!') : ''}
+                                onChange={(event) => {
+                                    setClubName(event.target.value);
+                                    if (!isClubNameValid) {
+                                        setIsClubNameValid(true);
+                                    }
+                                }}
                             />
                         </div>
                         <div className='flex flex-col ml-3'>
-                            <FormControl variant="outlined" className='min-w-60'>
+                            <FormControl variant="outlined" className='min-w-60' error={!isAdvisorValid}>
                                 <InputLabel id="advisor-label">Advisor</InputLabel>
                                 <Select
                                     labelId="advisor-label"
                                     value={selectedAdvisorID}
-                                    onChange={(e) => setSelectedAdvisorID(e.target.value)}
-                                    label="Advisor" // Set the same label as the InputLabel
+                                    onChange={(e) => {
+                                        setSelectedAdvisorID(e.target.value);
+                                        if (!isAdvisorValid) {
+                                            setIsAdvisorValid(true);
+                                        }
+                                    }}
+                                    label="Advisor"
                                     input={<OutlinedInput label="Advisor" />}
                                 >
                                     {advisors.map((advisor) => (
@@ -270,19 +330,39 @@ const CreateClub = () => {
                             label="Club Description"
                             multiline
                             rows={5}
+                            value={clubDescription}
                             onChange={(e) => setClubDescription(e.target.value)}
                             className='min-w-full'
                         />
                     </div>
                     <div className='flex flex-row mt-5'>
                         <Autocomplete
-                            value={students.find(student => student.id === selectedStudentID)}
-                            onChange={(_, newValue: Student | null) => setSelectedStudentID(newValue ? newValue.id : '')}
+                            value={students.find(student => student.id === selectedStudentID) || null}
+                            onChange={(_, newValue: Student | null) => {
+                                setSelectedStudentID(newValue ? newValue.id : '');
+                                if (!newValue) {
+                                    setIsPresidentValid(false);
+                                } else {
+                                    if (!isPresidentValid) {
+                                        setIsPresidentValid(true);
+                                    }
+                                }
+                            }}
                             options={students}
                             getOptionLabel={(option: Student) => `${option.firstName} ${option.lastName}`}
-                            renderInput={(params) => <TextField {...params} label="President" variant="outlined" required />}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="President"
+                                    variant="outlined"
+                                    required
+                                    error={!isPresidentValid}
+                                    helperText={!isPresidentValid ? 'Selecting a President is required.' : ''}
+                                />
+                            )}
                             fullWidth
                         />
+
                     </div>
                     <div className='flex flex-row'>
                         <Button
@@ -296,6 +376,11 @@ const CreateClub = () => {
                     </div>
                 </Box>
             </div>
+            {alert.show && (
+                <Stack sx={{ width: '100%' }} spacing={2}>
+                    <Alert severity={alert.severity}>{alert.message}</Alert>
+                </Stack>
+            )}
         </div>
     );
 }
