@@ -166,8 +166,6 @@ const CreateClub = () => {
                     console.error('Failed to upload image to Firebase Storage', error);
                 }
             }, 'image/png');
-
-            window.location.reload();
         }
     };
 
