@@ -17,7 +17,7 @@ const Navbar = () => {
   const buttons = [
     <IconButton key="profile" className='text-black text-3xl'><PersonOutlineIcon /></IconButton>,
     <IconButton key="notification" className='text-black text-3xl'><NotificationsNoneIcon /></IconButton>,
-    <IconButton key="notification" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()} /></IconButton>,
+    <IconButton key="signout" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()} /></IconButton>,
   ];
 
   useEffect(() => {
@@ -30,13 +30,18 @@ const Navbar = () => {
         const data = await response.json();
         setStaffName(data.staffName);
         setStaffLastName(data.staffLastName);
+        
+        if (!data.staffName || !data.staffLastName) {
+          console.error('Missing staff name or last name, refreshing page.');
+          window.location.reload();
+        }
       } catch (error) {
         console.error('Failed to fetch staff data:', error);
       }
     };
-
     fetchStaffData();
   }, []);
+
   return (
     <nav className='flex-between fixed z-50 w-full px-6 py-4 lg:px-10 bg-white'>
       <div className="flex flex-row items-center pag-4 w-full">
