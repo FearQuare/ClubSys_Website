@@ -3,6 +3,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import BoardMemberList from '@/components/BoardMemberList';
 
 type Permissions = {
     canEdit: boolean;
@@ -55,7 +56,7 @@ const ClubDetailsPage = () => {
                 if (!response.ok) throw new Error(`Club data fetch failed: Status ${response.status}`);
                 const data: Club = await response.json();
                 setClub(data);
-                
+
                 const presidentMember = data.boardMembers.find(member => member.memberRole === "President");
                 if (presidentMember) {
                     const studentResponse = await fetch(`/api/students?studentId=${presidentMember.studentID}`);
@@ -115,20 +116,25 @@ const ClubDetailsPage = () => {
     if (!club) return <div>No club data available.</div>;
 
     return (
-        <div className='pl-20 mt-10 flex flex-row'>
-            <div className='flex flex-col text-center ml-10'>
-                <Avatar alt="Club Image" src={club.clubIcon} sx={{ width: 245, height: 245 }} className='shadow-xl border-solid border-2 border-sky-500' />
-                <h1 className='mt-5 text-3xl font-semibold max-w-60'>{club.clubName}</h1>
-                <p><span className='text-blue-600 font-semibold'>President: </span>{president ? `${president.firstName} ${president.lastName}` : 'Loading President...'}</p>
-            </div>
-            <div className='flex flex-col ml-16 mt-10 max-w-4xl text-lg'>
-                <p>{club.clubDescription}</p>
-                <div className='flex flex-row mt-auto space-x-16'>
-                    <Button variant="contained" className={visibleBoardMembers ? 'bg-green-500' : 'bg-blue-400'} onClick={handleBoardMembersClick}>Board Members List</Button>
-                    <Button variant="contained" className={visibleClubEvents ? 'bg-green-500' : 'bg-blue-400'} onClick={handleClubEventsClick}>Club Events</Button>
-                    <Button variant="contained" className={visibleEditClub ? 'bg-green-500' : 'bg-blue-400'} onClick={handleEditClubClick}>Edit Club</Button>
-                    <Button variant="contained" className={visibleStatistics ? 'bg-green-500' : 'bg-blue-400'} onClick={handleStatisticsClick}>Statistics</Button>
+        <div className='pl-20 mt-10'>
+            <div className='flex flex-row'>
+                <div className='flex flex-col text-center ml-10'>
+                    <Avatar alt="Club Image" src={club.clubIcon} sx={{ width: 245, height: 245 }} className='shadow-xl border-solid border-2 border-sky-500' />
+                    <h1 className='mt-5 text-3xl font-semibold max-w-60'>{club.clubName}</h1>
+                    <p><span className='text-blue-600 font-semibold'>President: </span>{president ? `${president.firstName} ${president.lastName}` : 'Loading President...'}</p>
                 </div>
+                <div className='flex flex-col ml-16 mt-10 max-w-4xl text-lg'>
+                    <p>{club.clubDescription}</p>
+                    <div className='flex flex-row mt-auto space-x-16'>
+                        <Button variant="contained" className={visibleBoardMembers ? 'bg-green-500' : 'bg-blue-400'} onClick={handleBoardMembersClick}>Board Members List</Button>
+                        <Button variant="contained" className={visibleClubEvents ? 'bg-green-500' : 'bg-blue-400'} onClick={handleClubEventsClick}>Club Events</Button>
+                        <Button variant="contained" className={visibleEditClub ? 'bg-green-500' : 'bg-blue-400'} onClick={handleEditClubClick}>Edit Club</Button>
+                        <Button variant="contained" className={visibleStatistics ? 'bg-green-500' : 'bg-blue-400'} onClick={handleStatisticsClick}>Statistics</Button>
+                    </div>
+                </div>
+            </div>
+            <div className='flex flex-row mt-10'>
+                <BoardMemberList club={club}/>
             </div>
         </div>
     );
