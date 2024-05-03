@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import BoardMemberList from '@/components/BoardMemberList';
-import Statiscics from '@/components/Statistics';
 import ClubEvents from '@/components/ClubEvents';
 import EditClub from '@/components/EditClub';
+import Statistics from '@/components/Statistics';
 
 type Permissions = {
     canEdit: boolean;
@@ -26,6 +26,7 @@ interface Club {
     clubDescription: string;
     clubIcon: string;
     boardMembers: BoardMember[];
+    memberList: string[];
 }
 
 type Student = {
@@ -138,7 +139,7 @@ const ClubDetailsPage = () => {
             </div>
             <div className='flex flex-row mt-10'>
                 {visibleBoardMembers && <BoardMemberList club={club} />}
-                {visibleStatistics && <Statiscics />}
+                {visibleStatistics && <Statistics club={club} />}
                 {visibleClubEvents && <ClubEvents />}
                 {visibleEditClub && <EditClub />}
             </div>
