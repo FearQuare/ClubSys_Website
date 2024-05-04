@@ -170,55 +170,62 @@ const CreateClub = () => {
             return;
         }
 
-        if (editorRef.current && image) {
+        let imageUrl = null; // Default to null if no new image is uploaded
+        if (image !== '/add-image.png' && editorRef.current) {
             const canvas = editorRef.current.getImageScaledToCanvas();
-            canvas.toBlob(async (blob) => {
-                if (!blob) {
-                    console.error('Canvas blob is null');
-                    setAlert({ show: true, severity: 'error', message: 'Failed to get the image blob.' });
-                    return;
-                }
+            const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+            if (blob) {
                 try {
                     const imageRef = ref(storage, `ClubIcons/${new Date().toISOString()}.png`);
                     const snapshot = await uploadBytes(imageRef, blob);
-                    const imageUrl = await getDownloadURL(snapshot.ref);
+                    imageUrl = await getDownloadURL(snapshot.ref);
                     console.log('Image uploaded to Firebase Storage!');
-
-                    const clubDoc = {
-                        advisorID: selectedAdvisorID,
-                        boardMembers: [
-                            {
-                                memberRole: "President",
-                                permissions: { canEdit: true, canEventPost: true, canAddMembers: true },
-                                studentID: selectedStudentID
-                            }
-                        ],
-                        clubDescription: clubDescription,
-                        clubIcon: imageUrl,
-                        clubName,
-                        memberList: [selectedStudentID]
-                    };
-
-                    const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
-                    setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
-
-                    setClubName('');
-                    setSelectedAdvisorID('');
-                    setClubDescription('');
-                    setSelectedStudentID('');
-                    setImage('/add-image.png');
-                    setScale(1);
-                    setPosition({ x: 0.5, y: 0.5 });
-                    setRotate(0);
-                    setBorderRadius(50);
-                    setIsClubNameValid(true);
-                    setIsAdvisorValid(true);
-                    setIsPresidentValid(true);
                 } catch (error) {
                     console.error('Failed to upload image to Firebase Storage', error);
                     setAlert({ show: true, severity: 'error', message: 'Failed to upload image to Firebase Storage.' });
+                    return;
                 }
-            }, 'image/png');
+            } else {
+                console.error('Canvas blob is null');
+                setAlert({ show: true, severity: 'error', message: 'Failed to get the image blob.' });
+                return;
+            }
+        }
+
+        const clubDoc = {
+            advisorID: selectedAdvisorID,
+            boardMembers: [
+                {
+                    memberRole: "President",
+                    permissions: { canEdit: true, canEventPost: true, canAddMembers: true },
+                    studentID: selectedStudentID
+                }
+            ],
+            clubDescription,
+            clubIcon: imageUrl, // This will be null if no image was uploaded
+            clubName,
+            memberList: [selectedStudentID]
+        };
+
+        try {
+            const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
+            setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
+            // Reset form fields after successful submission
+            setClubName('');
+            setSelectedAdvisorID('');
+            setClubDescription('');
+            setSelectedStudentID('');
+            setImage('/add-image.png');
+            setScale(1);
+            setPosition({ x: 0.5, y: 0.5 });
+            setRotate(0);
+            setBorderRadius(50);
+            setIsClubNameValid(true);
+            setIsAdvisorValid(true);
+            setIsPresidentValid(true);
+        } catch (error) {
+            console.error('Error creating club document in Firestore', error);
+            setAlert({ show: true, severity: 'error', message: 'Error creating club document.' });
         }
     };
 
