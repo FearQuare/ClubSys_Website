@@ -1,33 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import axios from 'axios';
-
-type Permissions = {
-    canEdit: boolean;
-    canEventPost: boolean;
-    canAddMembers: boolean;
-};
-
-type BoardMember = {
-    memberRole: string;
-    permissions: Permissions;
-    studentID: string;
-};
-
-interface Club {
-    id: string;
-    boardMembers: BoardMember[];
-}
+import { Club, Student } from '@/types/firestore';
 
 type BoardMemberListProps = {
     club: Club;
 };
-
-type Student = {
-    id: string;
-    firstName: string;
-    lastName: string;
-}
 
 const BoardMemberList: React.FC<BoardMemberListProps> = ({ club }) => {
     const [rows, setRows] = useState<any[]>([]);
