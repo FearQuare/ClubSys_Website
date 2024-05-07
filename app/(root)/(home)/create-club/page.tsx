@@ -21,9 +21,10 @@ import FormControl from '@mui/material/FormControl';
 import Autocomplete from '@mui/material/Autocomplete';
 import { storage, db } from '@/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, arrayUnion } from 'firebase/firestore';
 import Alert, { AlertColor } from '@mui/material/Alert';
 import { Student, Advisor, Interest } from '@/types/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -46,6 +47,7 @@ const CreateClub = () => {
     const [image, setImage] = useState<string>('/add-image.png');
     const [clubName, setClubName] = useState<string>('');
     const [selectedAdvisorID, setSelectedAdvisorID] = useState<string>('');
+    const [selectedInterestID, setSelectedInterestID] = useState<string>('');
     const [advisors, setAdvisors] = useState<Advisor[]>([]);
     const [clubDescription, setClubDescription] = useState<string>('');
     const [students, setStudents] = useState<Student[]>([]);
@@ -57,6 +59,7 @@ const CreateClub = () => {
     });
     const [isClubNameValid, setIsClubNameValid] = useState(true);
     const [isAdvisorValid, setIsAdvisorValid] = useState(true);
+    const [isInterestValid, setIsInterestValid] = useState(true);
     const [isPresidentValid, setIsPresidentValid] = useState(true);
     const [interests, setInterests] = useState<Interest[]>([]);
 
@@ -77,7 +80,7 @@ const CreateClub = () => {
             .then(res => res.json())
             .then((data: Student[]) => setStudents(data))
             .catch(error => console.error('Failed to fetch students', error));
-        
+
         fetch('/api/interests')
             .then(res => res.json())
             .then((data: Interest[]) => setInterests(data))
@@ -117,6 +120,12 @@ const CreateClub = () => {
             isValid = false;
         }
 
+        if (!selectedInterestID) {
+            setIsInterestValid(false);
+            setAlert({ show: true, severity: 'error', message: 'Selecting an Interest is required.' });
+            isValid = false;
+        }
+
         if (!selectedStudentID) {
             setIsPresidentValid(false);
             setAlert({ show: true, severity: 'error', message: 'Selecting a President is required.' });
@@ -124,6 +133,13 @@ const CreateClub = () => {
         }
 
         if (!isValid) return;
+
+        const studentRef = doc(db, "Students", selectedStudentID);
+        const studentDoc = await getDoc(studentRef);
+        if (studentDoc.exists() && studentDoc.data().boardMemberOf) {
+            setAlert({ show: true, severity: 'error', message: 'You cannot add this student as a president because this student is already related by other clubs as a board member.' });
+            return;
+        }
 
         const querySnapshot = await getDocs(query(collection(db, 'Clubs'), where('clubName', '==', clubName.trim())));
         if (!querySnapshot.empty) {
@@ -172,8 +188,20 @@ const CreateClub = () => {
         try {
             const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
             setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
+
+            await updateDoc(studentRef, {
+                boardMemberOf: docRef.id
+            });
+
+            const interestRef = doc(db, "Interests", selectedInterestID);
+            await updateDoc(interestRef, {
+                relatedClubs: arrayUnion(docRef.id)
+            });
+
+
             setClubName('');
             setSelectedAdvisorID('');
+            setSelectedInterestID('');
             setClubDescription('');
             setSelectedStudentID('');
             setImage('/add-image.png');
@@ -183,6 +211,7 @@ const CreateClub = () => {
             setBorderRadius(50);
             setIsClubNameValid(true);
             setIsAdvisorValid(true);
+            setIsInterestValid(true);
             setIsPresidentValid(true);
         } catch (error) {
             console.error('Error creating club document in Firestore', error);
@@ -286,6 +315,32 @@ const CreateClub = () => {
                                             value={advisor.id}
                                         >
                                             {`${advisor.advisorName} ${advisor.advisorLastName}`}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </div>
+                        <div className='flex flex-col ml-3'>
+                            <FormControl variant="outlined" className='min-w-60' error={!isInterestValid}>
+                                <InputLabel id="interest-label">Interest</InputLabel>
+                                <Select
+                                    labelId="interest-label"
+                                    value={selectedInterestID}
+                                    onChange={(e) => {
+                                        setSelectedInterestID(e.target.value);
+                                        if (!isInterestValid) {
+                                            setIsInterestValid(true);
+                                        }
+                                    }}
+                                    label="Interest"
+                                    input={<OutlinedInput label="Interest" />}
+                                >
+                                    {interests.map((interest) => (
+                                        <MenuItem
+                                            key={interest.id}
+                                            value={interest.id}
+                                        >
+                                            {`${interest.interestName}`}
                                         </MenuItem>
                                     ))}
                                 </Select>

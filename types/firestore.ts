@@ -85,5 +85,7 @@ export interface Student {
 }
 
 export interface Interest {
+    id: string;
     relatedClubs: string[];
+    interestName: string;
 }
