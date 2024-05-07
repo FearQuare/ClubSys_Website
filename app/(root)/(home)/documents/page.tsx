@@ -17,6 +17,7 @@ import { styled } from '@mui/material/styles';
 import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import { format } from 'date-fns';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Club, Document } from '@/types/firestore';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -39,23 +40,6 @@ const MenuProps = {
       width: 250,
     },
   },
-};
-
-type Club = {
-  id: string;
-  clubName: string;
-};
-
-type Document = {
-  id: string,
-  dateTime?: {
-    _seconds: number;
-    _nanoseconds: number;
-  };
-  fileName: string;
-  clubID: string;
-  fileURL: string;
-  filePath: string;
 };
 
 type FileUploadState = File | null;

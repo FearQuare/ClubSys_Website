@@ -36,28 +36,6 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-type Permissions = {
-    canEdit: boolean;
-    canEventPost: boolean;
-    canAddMembers: boolean;
-}
-
-type BoardMember = {
-    memberRole: string;
-    permissions: Permissions;
-    studentID: string;
-}
-
-type Club = {
-    id: string;
-    advisorID: string;
-    boardMembers: BoardMember[];
-    clubDescription: string;
-    clubIcon: string;
-    clubName: string;
-    memberList: string[];
-};
-
 type Student = {
     id: string;
     firstName: string;
@@ -69,17 +47,6 @@ type Advisor = {
     advisorLastName: string;
     advisorName: string;
 }
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-};
 
 const CreateClub = () => {
     const editorRef = useRef<AvatarEditor | null>(null);
@@ -170,7 +137,7 @@ const CreateClub = () => {
             return;
         }
 
-        let imageUrl = null; // Default to null if no new image is uploaded
+        let imageUrl = null;
         if (image !== '/add-image.png' && editorRef.current) {
             const canvas = editorRef.current.getImageScaledToCanvas();
             const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
@@ -202,7 +169,7 @@ const CreateClub = () => {
                 }
             ],
             clubDescription,
-            clubIcon: imageUrl, // This will be null if no image was uploaded
+            clubIcon: imageUrl,
             clubName,
             memberList: [selectedStudentID]
         };
@@ -210,7 +177,6 @@ const CreateClub = () => {
         try {
             const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
             setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
-            // Reset form fields after successful submission
             setClubName('');
             setSelectedAdvisorID('');
             setClubDescription('');

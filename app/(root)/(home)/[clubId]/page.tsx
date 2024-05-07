@@ -7,33 +7,7 @@ import BoardMemberList from '@/components/BoardMemberList';
 import ClubEvents from '@/components/ClubEvents';
 import EditClub from '@/components/EditClub';
 import Statistics from '@/components/Statistics';
-
-type Permissions = {
-    canEdit: boolean;
-    canEventPost: boolean;
-    canAddMembers: boolean;
-}
-
-type BoardMember = {
-    memberRole: string;
-    permissions: Permissions;
-    studentID: string;
-}
-
-interface Club {
-    id: string;
-    clubName: string;
-    clubDescription: string;
-    clubIcon: string;
-    boardMembers: BoardMember[];
-    memberList: string[];
-}
-
-type Student = {
-    id: string;
-    firstName: string;
-    lastName: string;
-}
+import { Club, Student } from '@/types/firestore';
 
 interface RouteParams {
     clubId?: string;
