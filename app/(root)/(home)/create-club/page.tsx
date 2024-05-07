@@ -23,6 +23,7 @@ import { storage, db } from '@/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import Alert, { AlertColor } from '@mui/material/Alert';
+import { Student, Advisor, Interest } from '@/types/firestore';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -35,18 +36,6 @@ const VisuallyHiddenInput = styled('input')({
     whiteSpace: 'nowrap',
     width: 1,
 });
-
-type Student = {
-    id: string;
-    firstName: string;
-    lastName: string;
-}
-
-type Advisor = {
-    id: string;
-    advisorLastName: string;
-    advisorName: string;
-}
 
 const CreateClub = () => {
     const editorRef = useRef<AvatarEditor | null>(null);
@@ -69,6 +58,7 @@ const CreateClub = () => {
     const [isClubNameValid, setIsClubNameValid] = useState(true);
     const [isAdvisorValid, setIsAdvisorValid] = useState(true);
     const [isPresidentValid, setIsPresidentValid] = useState(true);
+    const [interests, setInterests] = useState<Interest[]>([]);
 
     useSession({
         required: true,
@@ -87,6 +77,11 @@ const CreateClub = () => {
             .then(res => res.json())
             .then((data: Student[]) => setStudents(data))
             .catch(error => console.error('Failed to fetch students', error));
+        
+        fetch('/api/interests')
+            .then(res => res.json())
+            .then((data: Interest[]) => setInterests(data))
+            .catch(error => console.error('Failed to fetch interests', error));
     }, []);
 
     const handlePositionChange = (position: { x: number; y: number }) => {

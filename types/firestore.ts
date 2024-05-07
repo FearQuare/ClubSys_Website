@@ -1,4 +1,4 @@
-export interface Advisors {
+export interface Advisor {
     id: string;
     advisorLastName: string;
     advisorName: string;
@@ -81,4 +81,9 @@ export interface Student {
     id: string;
     firstName: string;
     lastName: string;
+    boardMemberOf: string;
+}
+
+export interface Interest {
+    relatedClubs: string[];
 }
