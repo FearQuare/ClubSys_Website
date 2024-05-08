@@ -79,13 +79,39 @@ export interface AttendanceData {
 
 export interface Student {
     id: string;
-    firstName: string;
-    lastName: string;
     boardMemberOf: string;
+    department: string;
+    email: string;
+    firstName: string;
+    followedClubList: string[];
+    isDisable: boolean;
+    isInterestSelected: boolean;
+    joinedClubList: string[];
+    lastName: string;
+    studentID: string;
+    tel: string;
+    profilePhoto: string;
 }
 
 export interface Interest {
     id: string;
     relatedClubs: string[];
     interestName: string;
+    studentIDs: string[];
+}
+
+export interface HCS {
+    id: string;
+    staffLastName: string;
+    staffMailAddress: string;
+    staffName: string;
+    staffPhoneNum: string;
+    staffRole: string;
+}
+
+export interface Notification {
+    id: string;
+    message: string;
+    receiverID: string;
+    senderID: string;
 }
