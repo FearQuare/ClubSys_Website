@@ -7,10 +7,8 @@ type BoardMemberListProps = {
     club: Club;
 };
 
-
-
 const BoardMemberList: React.FC<BoardMemberListProps> = ({ club }) => {
-    const [rows, setRows] = useState<any[]>([]);
+    const [rows, setRows] = useState<Student[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -19,15 +17,25 @@ const BoardMemberList: React.FC<BoardMemberListProps> = ({ club }) => {
             const students: Student[] = await Promise.all(
                 club.boardMembers.map(async (member) => {
                     const response = await axios.get(`/api/students?studentId=${member.studentID}`);
-                    const { firstName, lastName } = response.data;
-                    const boardMemberOf = club.id;
+                    const { data } = response;
                     return {
                         id: member.studentID,
-                        firstName,
-                        lastName,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
                         role: member.memberRole,
-                        boardMemberOf,
-                        ...member.permissions
+                        boardMemberOf: club.id,
+                        canAddMembers: member.permissions.canAddMembers,
+                        canEdit: member.permissions.canEdit,
+                        canEventPost: member.permissions.canEventPost,
+                        department: data.department || "Default Department",
+                        email: data.email || "email@example.com",
+                        followedClubList: data.followedClubList || [],
+                        isDisable: data.isDisable || false,
+                        isInterestSelected: data.isInterestSelected || false,
+                        joinedClubList: data.joinedClubList,
+                        studentID: data.studentID,
+                        tel: data.tel,
+                        profilePhoto: data.profilePhoto
                     };
                 })
             );
@@ -36,7 +44,6 @@ const BoardMemberList: React.FC<BoardMemberListProps> = ({ club }) => {
         };
         fetchStudents();
     }, [club]);
-    
 
     const columns: GridColDef[] = [
         { field: 'firstName', headerName: 'Name', width: 150 },
