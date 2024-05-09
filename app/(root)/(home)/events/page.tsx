@@ -171,7 +171,7 @@ const Events = () => {
       if(!isUploaded){
         return 'bg-red-400';
       }
-      return '';
+      return 'bg-green-300';
     }
   }
 

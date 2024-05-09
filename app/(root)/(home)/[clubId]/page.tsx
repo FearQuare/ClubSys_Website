@@ -114,7 +114,7 @@ const ClubDetailsPage = () => {
             <div className='flex flex-row mt-10'>
                 {visibleBoardMembers && <BoardMemberList club={club} />}
                 {visibleStatistics && <Statistics club={club} />}
-                {visibleClubEvents && <ClubEvents />}
+                {visibleClubEvents && <ClubEvents club={club} />}
                 {visibleEditClub && <EditClub />}
             </div>
         </div>

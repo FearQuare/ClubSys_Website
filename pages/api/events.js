@@ -2,6 +2,7 @@ import { db } from '../../firebase/firebaseAdmin';
 
 export default async function handler(req, res) {
     const { eventId } = req.query;
+    const { clubId } = req.query;
 
     if (req.method == 'GET' && eventId) {
         try {
@@ -15,6 +16,20 @@ export default async function handler(req, res) {
         } catch (error) {
             console.error('Failed to retrieve event', error);
             res.status(500).json({ error: 'Failed to retrieve event' });
+        }
+    } else if (req.method === 'GET' && clubId) {
+        try {
+            const eventsCollection = db().collection('Events').where('clubID', '==', clubId);
+            const snapshot = await eventsCollection.get();
+            if (snapshot.empty) {
+                res.status(200).json({ error: 'No events found for this club' });
+            } else {
+                const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                res.status(200).json(events);
+            }
+        } catch (error) {
+            console.error('Failed to retrieve events for club', error);
+            res.status(500).json({ error: 'Failed to retrieve events for club' });
         }
     } else if (req.method === 'GET') {
         try {
