@@ -55,18 +55,19 @@ const BoardMemberList: React.FC<BoardMemberListProps> = ({ club }) => {
     ];
 
     return (
-        <div style={{ height: 400, width: '100%' }}>
+        <div style={{ height: 350, width: '97%' }}>
             <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Board Members List</h1>
             <DataGrid
                 rows={rows}
                 columns={columns}
                 initialState={{
                     pagination: {
-                        paginationModel: { page: 0, pageSize: 25 },
+                        paginationModel: { page: 0, pageSize: 5 },
                     },
                 }}
-                pageSizeOptions={[25, 40]}
+                pageSizeOptions={[5]}
                 loading={loading}
+                className='mt-5 text-lg'
             />
         </div>
     );
