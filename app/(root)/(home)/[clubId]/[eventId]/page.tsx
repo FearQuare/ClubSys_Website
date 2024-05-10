@@ -190,7 +190,7 @@ const EventDetailsPage = () => {
                 if (attendee.isAttended === null || attendee.isAttended === undefined) {
                     return (
                         <Link href={`/student/${attendee.studentID}`} key={attendee.studentID} legacyBehavior>
-                            <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                            <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl hover:border-2 border-blue-400">
                                 {displayStudentName(attendee.studentID)} | Attendance information is not ready yet.
                             </div>
                         </Link>
@@ -198,7 +198,7 @@ const EventDetailsPage = () => {
                 }
                 return (
                     <Link href={`/student/${attendee.studentID}`} key={attendee.studentID} legacyBehavior>
-                        <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                        <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl hover:border-2 border-blue-400">
                             {displayStudentName(attendee.studentID)} | {attendee.isAttended ? 'Attended' : 'Not attended'}
                         </div>
                     </Link>
