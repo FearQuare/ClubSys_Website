@@ -58,7 +58,7 @@ export interface Events {
     eventDescription: string;
     eventLocation: {
         _latitude: number;
-        _longtitude: number;
+        _longitude: number;
     };
     eventName: string;
     eventType: string;

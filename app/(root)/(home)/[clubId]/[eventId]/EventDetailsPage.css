@@ -1,0 +1,37 @@
+.button-base {
+    color: black !important;
+    font-weight: 600 !important;
+    transition: background-color 0.3s;
+}
+
+.button-base:hover {
+    background-color: #0096c766 !important;
+    color: white !important;
+}
+
+.button-base.active {
+    color: gray !important;
+    pointer-events: none;
+}
+
+/* Styles the scrollbar itself (track) */
+.scrollable-event-details::-webkit-scrollbar {
+    width: 5px; /* Adjust scrollbar width */
+}
+
+/* Styles the draggable part of the scrollbar (thumb) */
+.scrollable-event-details::-webkit-scrollbar-thumb {
+    background-color: #ccc00c00; /* Gray thumb */
+    border-radius: 6px; /* Rounded corners on the thumb */
+    
+}
+
+/* Optional: style the track (part the thumb slides within) */
+.scrollable-event-details::-webkit-scrollbar-track {
+    background-color: #DCF5FF00; /* Light gray track */
+}
+
+/* Optional: style the thumb when hovering over it */
+.scrollable-event-details::-webkit-scrollbar-thumb:hover {
+    background-color: #b3b3b3; /* Darker gray for hover effect */
+}

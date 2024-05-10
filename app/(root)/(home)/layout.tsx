@@ -6,6 +6,7 @@ import SessionProvider from "../../SessionProvider";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { SearchProvider } from '@/contexts/SearchContext';
+import 'leaflet/dist/leaflet.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
