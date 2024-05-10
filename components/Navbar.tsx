@@ -43,7 +43,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className='flex-between fixed z-50 w-full px-6 py-4 lg:px-10 bg-white'>
+    <nav className='flex-between fixed w-full px-6 py-4 lg:px-10 bg-white z-50'>
       <div className="flex flex-row items-center pag-4 w-full">
         <div className='relative basis-2/5'>
           <input

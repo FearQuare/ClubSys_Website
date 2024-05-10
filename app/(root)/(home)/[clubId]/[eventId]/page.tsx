@@ -12,6 +12,7 @@ import "./EventDetailsPage.css";
 import { db } from '@/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Document } from "@/types/firestore";
+import { EmbedPDF } from "@simplepdf/react-embed-pdf";
 
 interface RouteParams {
     eventId?: string;
@@ -35,7 +36,7 @@ const customIcon = new Icon({
 const EventDetailsPage = () => {
     const { eventId } = useParams() as RouteParams;
     const [event, setEvent] = useState<Events>();
-    const [documents, setDocuments] = useState<Document[]>([]);
+    const [document, setDocument] = useState<Document>();
 
     useEffect(() => {
         if (!eventId) return;
@@ -45,9 +46,15 @@ const EventDetailsPage = () => {
             .then((data: Events) => setEvent(data))
             .catch(error => console.error('Failed to fetch event', error));
 
-        fetch('/api/documents')
+        fetch(`/api/documents?eventId=${eventId}`)
             .then(res => res.json())
-            .then((data: Document[]) => setDocuments(data))
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setDocument(data[0]);
+                } else {
+                    console.error('No documents found for this event');
+                }
+            })
             .catch(error => console.error('Failed to fetch documents', error));
     }, [eventId]);
 
@@ -95,7 +102,7 @@ const EventDetailsPage = () => {
             return;
         }
 
-        const isUploaded = documents.some(document => document.eventID === eventId);
+        const isUploaded = document;
 
         if (!isUploaded) {
             alert("The related event document should be uploaded to approve this event.");
@@ -175,7 +182,7 @@ const EventDetailsPage = () => {
                         <div className="w-full h-full flex flex-col items-center justify-center">
                             <p className='text-color6 text-xl font-bold mb-3'>Event Location</p>
                             {event && (
-                                <MapContainer center={[event?.eventLocation._latitude, event?.eventLocation._longitude]} zoom={25} scrollWheelZoom={true} style={{ height: "80%", width: "95%" }} className="rounded-3xl">
+                                <MapContainer center={[event?.eventLocation._latitude, event?.eventLocation._longitude]} zoom={25} scrollWheelZoom={true} style={{ height: "80%", width: "95%" }} className="rounded-3xl z-0">
                                     <TileLayer
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     />
@@ -201,6 +208,18 @@ const EventDetailsPage = () => {
                     <div className="rounded-3xl bg-color5 text-center pt-2 pb-6 p-2 shadow-lg mt-5 max-w-2xl scrollable-event-details" style={{ overflowY: 'auto', height: '19rem' }}>
                         <p className='mt-5 text-color6 text-xl font-bold'>Event Details</p>
                         <p className="text-left m-2">{event?.eventDescription}</p>
+                    </div>
+                </div>
+            </div>
+            <div className="flex flex-row mt-5">
+                <div className="flex flex-col w-1/2">
+                    <div className="rounded-3xl bg-color5 text-center pt-2 p-2 shadow-lg">
+                        <EmbedPDF
+                            mode="inline"
+                            documentURL={document?.fileURL}
+                            className="rounded-3xl w-full"
+                            style={{ height: 800 }}
+                        />
                     </div>
                 </div>
             </div>
