@@ -190,7 +190,9 @@ const CreateClub = () => {
             setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
 
             await updateDoc(studentRef, {
-                boardMemberOf: docRef.id
+                boardMemberOf: docRef.id,
+                followedClubList: arrayUnion(docRef.id),
+                joinedClubList: arrayUnion(docRef.id)
             });
 
             const interestRef = doc(db, "Interests", selectedInterestID);
