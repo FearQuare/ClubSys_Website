@@ -11,7 +11,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import "./EventDetailsPage.css";
 import { db } from '@/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
-import { Document } from "@/types/firestore";
+import { Document, Student } from "@/types/firestore";
 import { EmbedPDF } from "@simplepdf/react-embed-pdf";
 
 interface RouteParams {
@@ -37,6 +37,7 @@ const EventDetailsPage = () => {
     const { eventId } = useParams() as RouteParams;
     const [event, setEvent] = useState<Events>();
     const [document, setDocument] = useState<Document>();
+    const [students, setStudents] = useState<Student[]>([]);
 
     useEffect(() => {
         if (!eventId) return;
@@ -45,6 +46,11 @@ const EventDetailsPage = () => {
             .then(res => res.json())
             .then((data: Events) => setEvent(data))
             .catch(error => console.error('Failed to fetch event', error));
+
+        fetch(`/api/students`)
+            .then(res => res.json())
+            .then((data: Student[]) => setStudents(data))
+            .catch(error => console.error('Failed to fetch students', error));
 
         fetch(`/api/documents?eventId=${eventId}`)
             .then(res => res.json())
@@ -159,6 +165,45 @@ const EventDetailsPage = () => {
         }
     }
 
+    const displayStudentName = (studentID: string) => {
+        let studentName = '';
+        students.forEach((element) => {
+            if(element.id == studentID){
+                studentName = `${element.firstName} ${element.lastName}`;
+            }
+        });
+        if (studentName == ''){
+            return <>Unknown Student</>
+        } else {
+            return <>{studentName}</>
+        }
+    }
+
+    const renderAttendanceDetails = () => {
+        if (event?.isApproved === false || event?.isApproved === null) {
+            return <p>Since this event is {event?.isApproved === false ? 'rejected' : 'pending'}, no student can attend.</p>;
+        }
+    
+        if (event?.attendance && event.attendance.length > 0) {
+            return event.attendance.map((attendee, index) => {
+                if (attendee.isAttended === null || attendee.isAttended === undefined) {
+                    return (
+                        <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                            {displayStudentName(attendee.studentID)} | Attendance information is not ready yet.
+                        </div>
+                    );
+                }
+                return (
+                    <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                        {displayStudentName(attendee.studentID)} | {attendee.isAttended ? 'Attended' : 'Not attended'}
+                    </div>
+                );
+            });
+        }
+    
+        return <p>No-one has attended yet.</p>;
+    };    
+
     return (
         <div className='pl-20 mt-10'>
             <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient'>Event Details: {event?.eventName}</h1>
@@ -212,7 +257,7 @@ const EventDetailsPage = () => {
                 </div>
             </div>
             <div className="flex flex-row mt-5">
-                <div className="flex flex-col w-1/2">
+                <div className="flex flex-col" style={{ flex: '0 0 50%' }}>
                     <div className="rounded-3xl bg-color5 text-center pt-2 p-2 shadow-lg">
                         <EmbedPDF
                             mode="inline"
@@ -222,7 +267,16 @@ const EventDetailsPage = () => {
                         />
                     </div>
                 </div>
+                <div className="flex flex-col ml-4 mr-4 flex-grow">
+                    <div className="rounded-3xl bg-color5 text-center pt-2 p-2 shadow-lg scrollable-event-details" style={{ height: 813 }}>
+                        <p className='mt-5 text-color6 text-xl font-bold'>Attendance Details</p>
+                        <div className="mt-5">
+                            {renderAttendanceDetails()}
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     );
 }
