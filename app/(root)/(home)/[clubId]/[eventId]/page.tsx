@@ -13,6 +13,7 @@ import { db } from '@/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Document, Student } from "@/types/firestore";
 import { EmbedPDF } from "@simplepdf/react-embed-pdf";
+import Link from 'next/link';
 
 interface RouteParams {
     eventId?: string;
@@ -168,11 +169,11 @@ const EventDetailsPage = () => {
     const displayStudentName = (studentID: string) => {
         let studentName = '';
         students.forEach((element) => {
-            if(element.id == studentID){
+            if (element.id == studentID) {
                 studentName = `${element.firstName} ${element.lastName}`;
             }
         });
-        if (studentName == ''){
+        if (studentName == '') {
             return <>Unknown Student</>
         } else {
             return <>{studentName}</>
@@ -183,26 +184,30 @@ const EventDetailsPage = () => {
         if (event?.isApproved === false || event?.isApproved === null) {
             return <p>Since this event is {event?.isApproved === false ? 'rejected' : 'pending'}, no student can attend.</p>;
         }
-    
+
         if (event?.attendance && event.attendance.length > 0) {
             return event.attendance.map((attendee, index) => {
                 if (attendee.isAttended === null || attendee.isAttended === undefined) {
                     return (
-                        <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
-                            {displayStudentName(attendee.studentID)} | Attendance information is not ready yet.
-                        </div>
+                        <Link href={`/student/${attendee.studentID}`} key={attendee.studentID} legacyBehavior>
+                            <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                                {displayStudentName(attendee.studentID)} | Attendance information is not ready yet.
+                            </div>
+                        </Link>
                     );
                 }
                 return (
-                    <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
-                        {displayStudentName(attendee.studentID)} | {attendee.isAttended ? 'Attended' : 'Not attended'}
-                    </div>
+                    <Link href={`/student/${attendee.studentID}`} key={attendee.studentID} legacyBehavior>
+                        <div key={index} className="p-3 mb-2 bg-color7 text-black rounded-xl">
+                            {displayStudentName(attendee.studentID)} | {attendee.isAttended ? 'Attended' : 'Not attended'}
+                        </div>
+                    </Link>
                 );
             });
         }
-    
+
         return <p>No-one has attended yet.</p>;
-    };    
+    };
 
     return (
         <div className='pl-20 mt-10'>
