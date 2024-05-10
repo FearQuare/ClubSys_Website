@@ -29,30 +29,29 @@ const StudentDetailsPage = () => {
     }, [studentId]);
 
     const renderClubs = (clubsArray: string[] | undefined) => {
-        if (clubsArray?.length == 0) {
+        if (clubsArray?.length === 0) {
             return <p className='mt-3 text-xl font-bold'>No clubs joined</p>;
         }
-
+    
         return (
             <>
                 {clubsArray?.map((clubID) => {
                     let matchedClubName = '';
                     clubs.forEach((club) => {
-                        if (club.id == clubID) {
+                        if (club.id === clubID) {
                             matchedClubName = club.clubName;
                         }
-                    })
-                    if (matchedClubName.length == 0) {
-                        return <p className='mt-3 text-xl font-bold'>The club with ID of {clubID} does not exist</p>
+                    });
+    
+                    if (matchedClubName.length === 0) {
+                        return <p key={clubID} className='mt-3 text-xl font-bold'>The club with ID of {clubID} does not exist</p>;
                     }
-
-                    return <p className='mt-3 text-xl font-bold'>{matchedClubName}</p>
+    
+                    return <p key={clubID} className='mt-3 text-xl font-bold'>{matchedClubName}</p>;
                 })}
             </>
         );
     };
-
-
 
     return (
         <div className="pl-20 mt-10">
