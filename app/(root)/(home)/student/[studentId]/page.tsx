@@ -78,7 +78,7 @@ const StudentDetailsPage = () => {
             })
         }).flat().filter(item => item !== null);
         if (!found) {
-            return <p className='mt-3 text-xl font-bold'>This student didn't choose interest.</p>;
+            return <p className='mt-3 text-xl font-bold'>This student did not choose interest.</p>;
         }
     
         return <>{elements}</>;
