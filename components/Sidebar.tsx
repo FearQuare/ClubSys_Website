@@ -21,6 +21,7 @@ const Sidebar = () => {
                     height={150}
                     alt="Clubsys Logo"
                     className='mb-10 ml-7'
+                    priority
                 />
                 {sidebarLinks.map((link) => {
                     const isActive = pathname === link.route || 

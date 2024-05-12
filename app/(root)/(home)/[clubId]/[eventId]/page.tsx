@@ -8,7 +8,6 @@ import 'leaflet/dist/leaflet.css';
 import { Icon } from 'leaflet';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-import "./EventDetailsPage.css";
 import { db } from '@/firebaseConfig';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Document, Student } from "@/types/firestore";

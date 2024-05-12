@@ -17,7 +17,7 @@ const Navbar = () => {
   const buttons = [
     <IconButton key="profile" className='text-black text-3xl'><PersonOutlineIcon /></IconButton>,
     <IconButton key="notification" className='text-black text-3xl'><NotificationsNoneIcon /></IconButton>,
-    <IconButton key="signout" className='text-black text-3xl'><ExitToAppIcon onClick={() => signOut()} /></IconButton>,
+    <IconButton key="signout" className='text-black text-3xl' onClick={() => signOut()}><ExitToAppIcon /></IconButton>,
   ];
 
   useEffect(() => {

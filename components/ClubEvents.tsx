@@ -19,11 +19,11 @@ const ClubEvents: React.FC<ClubEventsProps> = ({ club }) => {
         const fetchEvents = async () => {
             const response = await fetch(`/api/events?clubId=${club.id}`);
             const data = await response.json();
-            if (response.ok) {
+            if (response.ok && Array.isArray(data)) {
                 setEvents(data);
             } else {
                 console.error(data.error || 'Failed to fetch events');
-                setEvents([]);
+                setEvents([]);  // Always reset to an empty array if there's an error or the data isn't an array
             }
         };
 

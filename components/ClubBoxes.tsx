@@ -2,22 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearch } from '@/contexts/SearchContext';
-
-type Club = {
-  id: string;
-  advisorID: string;
-  boardMembers: {
-    memberRole: string;
-    permissions: Record<string, boolean>;
-    studentID: string;
-  }[];
-  clubDescription: string;
-  clubIcon: string;
-  clubName: string;
-  feedbacks: { feedback: string; studentID: string }[];
-  memberNum: number;
-  memberList: string[];
-};
+import { Club } from '@/types/firestore';
 
 const ClubBoxes: React.FC = () => {
   const [clubs, setClubs] = useState<Club[]>([]);

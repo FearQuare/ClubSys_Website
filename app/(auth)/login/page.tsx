@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -34,12 +33,12 @@ export default function LoginPage() {
           width={300}
           height={300}
           alt="Clubsys Logo"
+          priority
         />
       </div>
       <div className="flex flex-col justify-center items-center mb-4">
         <p className="text-3xl font-bold text-color3 mb-10">Log In</p>
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-          {/* Username Input */}
           <div>
             <input
               id="username"
@@ -53,8 +52,6 @@ export default function LoginPage() {
               placeholder="EkoID"
             />
           </div>
-
-          {/* Password Input */}
           <div>
             <input
               id="password"
@@ -68,8 +65,6 @@ export default function LoginPage() {
               placeholder="password"
             />
           </div>
-
-          {/* Submit Button */}
           <button 
             type="submit"
             disabled={!email || !password}
@@ -77,8 +72,6 @@ export default function LoginPage() {
           >
             Confirm
           </button>
-
-          {/* Login Feedback Message */}
           {loginStatus.message && (
             <div className={`${loginStatus.status === 'error' ? 'text-red-500' : 'text-green-500'} mt-2 text-center`}>
               {loginStatus.message}

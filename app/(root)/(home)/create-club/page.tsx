@@ -157,7 +157,6 @@ const CreateClub = () => {
                     const imageRef = ref(storage, `ClubIcons/${new Date().toISOString()}.png`);
                     const snapshot = await uploadBytes(imageRef, blob);
                     imageUrl = await getDownloadURL(snapshot.ref);
-                    console.log('Image uploaded to Firebase Storage!');
                 } catch (error) {
                     console.error('Failed to upload image to Firebase Storage', error);
                     setAlert({ show: true, severity: 'error', message: 'Failed to upload image to Firebase Storage.' });
