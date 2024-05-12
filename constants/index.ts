@@ -32,8 +32,8 @@ export const sidebarLinks = [
         route: '/documents',
     },
     {
-        label: 'Send Notification',
+        label: 'Notifications',
         IconComponent: NotificationsIcon,
-        route: '/send-notification',
+        route: '/notifications',
     },
 ];
