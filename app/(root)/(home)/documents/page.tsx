@@ -18,6 +18,7 @@ import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 import { format } from 'date-fns';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Club, Document } from '@/types/firestore';
+import TextField from '@mui/material/TextField';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -56,6 +57,7 @@ const Documents = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClubID, setSelectedClubID] = useState('');
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [message, setMessage] = useState('');
 
   const columns: GridColDef[] = [
     {
@@ -131,6 +133,13 @@ const Documents = () => {
       filePath: filePath
     });
 
+    await addDoc(collection(db, 'Notifications'), {
+      senderID: 'HCS',
+      receiverID: selectedClubID,
+      message: message,
+      document: fileURL
+    });
+
     window.location.reload();
   };
 
@@ -190,6 +199,9 @@ const Documents = () => {
             onClick={(e) => e.currentTarget.value = ''}
           />
         </Button>
+        <div className='mt-4'>
+          <TextField id="message" label="Message" variant="outlined" onChange={(event) => setMessage(event.target.value)}/>
+        </div>
         <Button onClick={uploadFile} className='mt-4'>Submit Upload</Button>
       </div>
       <div style={{ height: '93%', width: '93%' }}>

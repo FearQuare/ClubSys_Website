@@ -15,7 +15,12 @@ const Notifications = () => {
     return <div>Loading...</div>;
   }
   return (
-    <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5 pl-20 mt-10'>Notifications</h1>
+    <div className='pl-20 mt-10'>
+      <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Notifications</h1>
+      <div className='flex flex-row'>Create Notification</div>
+      <div className='flex flex-row'>Upcoming Events Without Documents</div>
+      <div className='flex flex-row'>Received Notifications</div>
+    </div>
   )
 }
 
