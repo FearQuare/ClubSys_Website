@@ -114,4 +114,9 @@ export interface Notification {
     message: string;
     receiverID: string;
     senderID: string;
+    date: {
+        _seconds: number;
+        _nanoseconds: number;
+    };
+    documentURL: string;
 }
