@@ -119,4 +119,5 @@ export interface Notification {
         _nanoseconds: number;
     };
     documentURL: string;
+    status: string;
 }
