@@ -86,13 +86,10 @@ const Notifications = () => {
   }
 
   const getEventsWithoutDocument = () => {
-    // Step 1: Traverse all documents and store the event IDs
     const documentEventIDs = new Set(documents.map(document => document.eventID));
 
-    // Step 2: Traverse events and store non-matching IDs in another array
     const eventsWithoutDocuments = events.filter(event => !documentEventIDs.has(event.id));
 
-    // Step 3: Return JSX for rendering the events or a message if no events are found
     return (
       <>
         {eventsWithoutDocuments.length > 0 ? (
