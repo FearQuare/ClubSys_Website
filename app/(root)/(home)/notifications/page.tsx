@@ -1,8 +1,11 @@
 'use client';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { Notification, Club, Events, Document } from '@/types/firestore';
+import { format } from 'date-fns';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 
 const Notifications = () => {
   const { status } = useSession({
@@ -16,6 +19,8 @@ const Notifications = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [events, setEvents] = useState<Events[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'ascending' | 'descending' }>({ key: '', direction: 'ascending' });
+  const [popupMessage, setPopupMessage] = useState<{ message: string, success: boolean } | null>(null);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -79,7 +84,75 @@ const Notifications = () => {
   const getClubName = (clubID: string) => {
     const club = clubs.find((club) => club.id === clubID);
     return club ? club.clubName : 'Unknown Club';
-  }
+  };
+
+  const sortData = <T,>(data: T[], key: keyof T): T[] => {
+    let sortedData = [...data];
+    const direction = sortConfig.direction === 'ascending' ? 1 : -1;
+
+    sortedData.sort((a, b) => {
+      const aValue = a[key];
+      const bValue = b[key];
+
+      if (key === 'date' || key === 'eventDate') {
+        const aDate = new Date((aValue as any)._seconds * 1000);
+        const bDate = new Date((bValue as any)._seconds * 1000);
+        return (aDate.getTime() - bDate.getTime()) * direction;
+      } else {
+        if (aValue < bValue) return -1 * direction;
+        if (aValue > bValue) return 1 * direction;
+        return 0;
+      }
+    });
+
+    setSortConfig({ key: key as string, direction: sortConfig.direction === 'ascending' ? 'descending' : 'ascending' });
+    return sortedData;
+  };
+
+  const requestSort = (key: string) => {
+    let sortedNotifications = notifications;
+    let sortedEvents = events;
+    switch (key) {
+      case 'senderID':
+      case 'date':
+      case 'message':
+      case 'documentURL':
+      case 'status':
+        sortedNotifications = sortData(notifications, key as keyof Notification);
+        break;
+      case 'eventName':
+      case 'clubID':
+      case 'eventDate':
+      case 'isApproved':
+        sortedEvents = sortData(events, key as keyof Events);
+        break;
+    }
+    setNotifications(sortedNotifications);
+    setEvents(sortedEvents);
+  };
+
+  const handleSendNotification = async (clubID: string, eventDate: { _seconds: number }, eventName: string) => {
+    const currentDate = new Date();
+    const eventDateObj = new Date(eventDate._seconds * 1000);
+    const daysLeft = Math.ceil((eventDateObj.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)) - 15;
+
+    const message = `${daysLeft} days left for the last day of approval of ${eventName}. Please send the event request document.`;
+    const notification = {
+      senderID: 'HCS',
+      receiverID: clubID,
+      message,
+      date: currentDate
+    };
+
+    try {
+      await addDoc(collection(db, 'Notifications'), notification);
+      setPopupMessage({ message: 'The message successfully sent', success: true });
+    } catch (error) {
+      setPopupMessage({ message: 'The notification failed', success: false });
+    } finally {
+      setTimeout(() => setPopupMessage(null), 3000);
+    }
+  };
 
   if (status === 'loading') {
     return <div>Loading...</div>;
@@ -87,8 +160,13 @@ const Notifications = () => {
 
   const getEventsWithoutDocument = () => {
     const documentEventIDs = new Set(documents.map(document => document.eventID));
+    const now = new Date();
+    const fifteenDaysFromNow = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
 
-    const eventsWithoutDocuments = events.filter(event => !documentEventIDs.has(event.id));
+    const eventsWithoutDocuments = events.filter(event => {
+      const eventDate = new Date(event.eventDate._seconds * 1000);
+      return !documentEventIDs.has(event.id) && eventDate >= fifteenDaysFromNow && eventDate > now;
+    });
 
     return (
       <>
@@ -97,8 +175,16 @@ const Notifications = () => {
             <tr key={event.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
               <td className="px-6 py-4">{event.eventName}</td>
               <td className="px-6 py-4">{getClubName(event.clubID)}</td>
-              <td className="px-6 py-4">Date</td>
+              <td className="px-6 py-4">{format(new Date(event.eventDate._seconds * 1000), 'PPpp')}</td>
               <td className="px-6 py-4">{event.isApproved == null ? 'Pending' : 'Rejected'}</td>
+              <td className='px-6 py-4'>
+                <button
+                  className="bg-orange-500 hover:bg-orange-400 odd:text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
+                  onClick={() => handleSendNotification(event.clubID, event.eventDate, event.eventName)}
+                >
+                  Request
+                </button>
+              </td>
             </tr>
           ))
         ) : (
@@ -108,9 +194,14 @@ const Notifications = () => {
         )}
       </>
     );
-}
+  };
 
-
+  const renderSortArrow = (key: string) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'ascending' ? '↑' : '↓';
+    }
+    return '';
+  };
 
   return (
     <div className='pl-20 mt-10'>
@@ -122,33 +213,35 @@ const Notifications = () => {
             <table className="w-full text-sm text-left rtl:text-right">
               <thead className="text-xs text-blue-500 uppercase bg-blue-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    From
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('senderID')}>
+                    From {renderSortArrow('senderID')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Date
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('date')}>
+                    Date {renderSortArrow('date')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Message
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('message')}>
+                    Message {renderSortArrow('message')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Related Document
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('documentURL')}>
+                    Related Document {renderSortArrow('documentURL')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Status
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('status')}>
+                    Status {renderSortArrow('status')}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {notifications.map(notification => (
-                  <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
-                    <td className="px-6 py-4">{getClubName(notification.senderID)}</td>
-                    <td className="px-6 py-4">Empty</td>
-                    <td className="px-6 py-4">{notification.message}</td>
-                    <td className="px-6 py-4">{notification.documentURL}</td>
-                    <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
-                  </tr>
-                ))}
+                {notifications
+                  .filter(notification => notification.senderID !== 'HCS')
+                  .map(notification => (
+                    <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
+                      <td className="px-6 py-4">{getClubName(notification.senderID)}</td>
+                      <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
+                      <td className="px-6 py-4">{notification.message}</td>
+                      <td className="px-6 py-4">{notification.documentURL}</td>
+                      <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -161,21 +254,19 @@ const Notifications = () => {
             <table className="w-full text-sm text-left rtl:text-right">
               <thead className="text-xs text-blue-500 uppercase bg-blue-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Event Name
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('eventName')}>
+                    Event Name {renderSortArrow('eventName')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Club
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('clubID')}>
+                    Club {renderSortArrow('clubID')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Event Date
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('eventDate')}>
+                    Event Date {renderSortArrow('eventDate')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Status
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('isApproved')}>
+                    Status {renderSortArrow('isApproved')}
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Send Notification
-                  </th>
+                  <th scope="col" className='px-6 py-3'>Request Document</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,8 +281,15 @@ const Notifications = () => {
           <h1 className='mt-5 text-2xl font-semibold text-orange-500'>Create Notification</h1>
         </div>
       </div>
+      {popupMessage && (
+        <div
+          className={`fixed bottom-5 right-5 px-4 py-2 rounded shadow-lg ${popupMessage.success ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+        >
+          {popupMessage.message}
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Notifications
+export default Notifications;

@@ -230,7 +230,7 @@ const EventDetailsPage = () => {
                     <div className="rounded-3xl bg-color5 text-center p-2 shadow-lg flex items-center justify-center" style={{ height: '28.50rem', width: '100%' }}>
                         <div className="w-full h-full flex flex-col items-center justify-center">
                             <p className='text-color6 text-xl font-bold mb-3'>Event Location</p>
-                            {event && (
+                            {event && event.eventLocation ? (
                                 <MapContainer center={[event?.eventLocation._latitude, event?.eventLocation._longitude]} zoom={25} scrollWheelZoom={true} style={{ height: "80%", width: "95%" }} className="rounded-3xl z-0">
                                     <TileLayer
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -241,6 +241,8 @@ const EventDetailsPage = () => {
                                         </Popup>
                                     </Marker>
                                 </MapContainer>
+                            ) : (
+                                <p>No event location provided.</p>
                             )}
                         </div>
                     </div>
@@ -250,8 +252,9 @@ const EventDetailsPage = () => {
                         <p className='mt-5 text-color6 text-xl font-bold'>Change Event Status</p>
                         <ButtonGroup variant="text" aria-label="event-status-buttons" className="mt-4">
                             <Button onClick={handleApprove} className={`button-base ${event?.isApproved === true ? 'active' : ''}`} disabled={event?.isApproved === true}>Approve</Button>
-                            <Button onClick={handlePending} className={`button-base ${event?.isApproved === null ? 'active' : ''}`} disabled={event?.isApproved === null}>Pending</Button>
+                            <Button onClick={handlePending} className={`button-base ${event?.isApproved === null || event?.isApproved === undefined ? 'active' : ''}`} disabled={event?.isApproved === null || event?.isApproved === undefined}>Pending</Button>
                             <Button onClick={handleReject} className={`button-base ${event?.isApproved === false ? 'active' : ''}`} disabled={event?.isApproved === false}>Reject</Button>
+
                         </ButtonGroup>
                     </div>
                     <div className="rounded-3xl bg-color5 text-center pt-2 pb-6 p-2 shadow-lg mt-5 max-w-2xl scrollable-event-details" style={{ overflowY: 'auto', height: '19rem' }}>

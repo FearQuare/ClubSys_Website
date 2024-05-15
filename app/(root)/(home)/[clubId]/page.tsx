@@ -5,7 +5,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import BoardMemberList from '@/components/BoardMemberList';
 import ClubEvents from '@/components/ClubEvents';
-import EditClub from '@/components/EditClub';
 import Statistics from '@/components/Statistics';
 import { Club, Student } from '@/types/firestore';
 
@@ -21,7 +20,6 @@ const ClubDetailsPage = () => {
     const [president, setPresident] = useState<Student | null>(null);
     const [visibleBoardMembers, setVisibleBoardMembers] = useState(true);
     const [visibleClubEvents, setVisibleClubEvents] = useState(false);
-    const [visibleEditClub, setVisibleEditClub] = useState(false);
     const [visibleStatistics, setVisibleStatistics] = useState(false);
 
     useEffect(() => {
@@ -64,28 +62,18 @@ const ClubDetailsPage = () => {
     const handleBoardMembersClick = () => {
         setVisibleBoardMembers(true);
         setVisibleClubEvents(false);
-        setVisibleEditClub(false);
         setVisibleStatistics(false);
     };
 
     const handleClubEventsClick = () => {
         setVisibleBoardMembers(false);
         setVisibleClubEvents(true);
-        setVisibleEditClub(false);
-        setVisibleStatistics(false);
-    };
-
-    const handleEditClubClick = () => {
-        setVisibleBoardMembers(false);
-        setVisibleClubEvents(false);
-        setVisibleEditClub(true);
         setVisibleStatistics(false);
     };
 
     const handleStatisticsClick = () => {
         setVisibleBoardMembers(false);
         setVisibleClubEvents(false);
-        setVisibleEditClub(false);
         setVisibleStatistics(true);
     };
 
@@ -106,7 +94,6 @@ const ClubDetailsPage = () => {
                     <div className='flex flex-row mt-auto space-x-16'>
                         <Button variant="contained" className={visibleBoardMembers ? 'bg-green-500' : 'bg-blue-400'} onClick={handleBoardMembersClick}>Board Members List</Button>
                         <Button variant="contained" className={visibleClubEvents ? 'bg-green-500' : 'bg-blue-400'} onClick={handleClubEventsClick}>Club Events</Button>
-                        <Button variant="contained" className={visibleEditClub ? 'bg-green-500' : 'bg-blue-400'} onClick={handleEditClubClick}>Edit Club</Button>
                         <Button variant="contained" className={visibleStatistics ? 'bg-green-500' : 'bg-blue-400'} onClick={handleStatisticsClick}>Statistics</Button>
                     </div>
                 </div>
@@ -115,7 +102,6 @@ const ClubDetailsPage = () => {
                 {visibleBoardMembers && <BoardMemberList club={club} />}
                 {visibleStatistics && <Statistics club={club} />}
                 {visibleClubEvents && <ClubEvents club={club} />}
-                {visibleEditClub && <EditClub />}
             </div>
         </div>
     );
