@@ -1,11 +1,13 @@
 'use client';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Notification, Club, Events, Document } from '@/types/firestore';
 import { format } from 'date-fns';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/firebaseConfig'; // Ensure storage is imported
+import { v4 as uuidv4 } from 'uuid';
 
 const Notifications = () => {
   const { status } = useSession({
@@ -21,6 +23,12 @@ const Notifications = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'ascending' | 'descending' }>({ key: '', direction: 'ascending' });
   const [popupMessage, setPopupMessage] = useState<{ message: string, success: boolean } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileName, setFileName] = useState('No documents selected');
+  const [selectedClubID, setSelectedClubID] = useState('');
+  const [message, setMessage] = useState('');
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
+  const [formErrors, setFormErrors] = useState<{ clubID?: string, message?: string }>({});
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -80,6 +88,21 @@ const Notifications = () => {
     fetchEvents();
     fetchDocuments();
   }, []);
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      setFileName(file.name);
+      setFileUpload(file);
+    } else {
+      setFileName('No documents selected');
+      setFileUpload(null);
+    }
+  };
 
   const getClubName = (clubID: string) => {
     const club = clubs.find((club) => club.id === clubID);
@@ -179,7 +202,7 @@ const Notifications = () => {
               <td className="px-6 py-4">{event.isApproved == null ? 'Pending' : 'Rejected'}</td>
               <td className='px-6 py-4'>
                 <button
-                  className="bg-orange-500 hover:bg-orange-400 odd:text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
+                  className="bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
                   onClick={() => handleSendNotification(event.clubID, event.eventDate, event.eventName)}
                 >
                   Request
@@ -203,9 +226,115 @@ const Notifications = () => {
     return '';
   };
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    let errors: { clubID?: string, message?: string } = {};
+
+    if (!selectedClubID) {
+      errors.clubID = 'You should select a club.';
+    }
+    if (!message) {
+      errors.message = 'You should enter a message.';
+    }
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      try {
+        let fileURL = null;
+        if (fileUpload) {
+          const fileRef = ref(storage, `Documents/${selectedClubID}/${fileUpload.name}-${uuidv4()}`);
+          const snapshot = await uploadBytes(fileRef, fileUpload);
+          fileURL = await getDownloadURL(snapshot.ref);
+
+          await addDoc(collection(db, 'Documents'), {
+            clubID: selectedClubID,
+            dateTime: serverTimestamp(),
+            fileName: fileUpload.name,
+            fileURL: fileURL,
+            filePath: fileRef.fullPath
+          });
+        }
+
+        await addDoc(collection(db, 'Notifications'), {
+          senderID: 'HCS',
+          receiverID: selectedClubID,
+          message: message,
+          documentURL: fileURL || '',
+          date: serverTimestamp()
+        });
+
+        setPopupMessage({ message: 'Notification sent successfully', success: true });
+      } catch (error) {
+        setPopupMessage({ message: 'Notification couldn\'t be sent', success: false });
+      } finally {
+        setTimeout(() => setPopupMessage(null), 3000);
+      }
+    }
+  };
+
   return (
     <div>
       <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Notifications</h1>
+      <form onSubmit={handleSubmit} className='flex flex-row'>
+        <div className='flex flex-col'>
+          <h1 className='mt-5 text-2xl font-semibold text-orange-500'>Create Notification</h1>
+          <label htmlFor="clubs" className='block mb-2 text-sm font-medium text-gray-900 mt-1'>Select the club</label>
+          <select
+            name="clubs"
+            id="clubs"
+            className={`bg-blue-50 border ${formErrors.clubID ? 'border-red-500' : 'border-blue-300'} text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5`}
+            value={selectedClubID}
+            onChange={(e) => setSelectedClubID(e.target.value)}
+          >
+            <option value="">Select a club</option>
+            {clubs.map((club) => (
+              <option key={club.id} value={club.id}>
+                {club.clubName}
+              </option>
+            ))}
+          </select>
+          {formErrors.clubID && <p className="text-red-500 text-xs mt-1">{formErrors.clubID}</p>}
+        </div>
+        <div className='flex flex-col mt-10 ml-6 min-w-64'>
+          <label htmlFor="message" className='block mb-2 text-sm font-medium text-gray-900 mt-4'>Please enter your message</label>
+          <textarea
+            rows={1}
+            name="message"
+            id="message"
+            placeholder='Enter your message here'
+            className={`block p-2.5 w-full text-sm text-gray-900 bg-blue-50 rounded-lg border ${formErrors.message ? 'border-red-500' : 'border-blue-300'} focus:ring-orange-500 focus:border-orange-500`}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          ></textarea>
+          {formErrors.message && <p className="text-red-500 text-xs mt-1">{formErrors.message}</p>}
+        </div>
+        <div className='flex flex-col mt-14 ml-6'>
+          <label htmlFor="document-upload" className='block mb-2 text-sm font-medium text-gray-900'>
+            {"Upload the document (optional)"}
+          </label>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={handleButtonClick}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+            >
+              Select Document
+            </button>
+            <span id="file-name" className='mt-2 text-sm text-gray-500 pb-2 pl-2'>{fileName}</span>
+            <input
+              ref={fileInputRef}
+              id="document-upload"
+              type="file"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+          </div>
+        </div>
+        <div className='flex flex-col mt-16 ml-10'>
+          <button type='submit' className='min-w-64 mt-4 bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded-xl'>Submit</button>
+        </div>
+      </form>
       <div className='flex flex-row'>
         <div className="flex flex-col min-w-full">
           <h1 className='mt-5 text-2xl font-semibold text-orange-500'>Received Notifications</h1>
@@ -238,7 +367,7 @@ const Notifications = () => {
                       <td className="px-6 py-4">{getClubName(notification.senderID)}</td>
                       <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
                       <td className="px-6 py-4">{notification.message}</td>
-                      <td className="px-6 py-4">{notification.documentURL}</td>
+                      <td className="px-6 py-4">{notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}</td>
                       <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
                     </tr>
                   ))}
@@ -278,7 +407,43 @@ const Notifications = () => {
       </div>
       <div className='flex flex-row'>
         <div className='flex flex-col min-w-full'>
-          <h1 className='mt-5 text-2xl font-semibold text-orange-500'>Create Notification</h1>
+          <h1 className='mt-5 text-2xl font-semibold text-orange-500'>Notifications Sent</h1>
+          <div className="mt-4 relative overflow-x-auto shadow-md sm:rounded-lg" style={{ width: '97%' }}>
+            <table className="w-full text-sm text-left rtl:text-right">
+              <thead className="text-xs text-blue-500 uppercase bg-blue-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('receiverID')}>
+                    To {renderSortArrow('receiverID')}
+                  </th>
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('date')}>
+                    Date {renderSortArrow('date')}
+                  </th>
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('message')}>
+                    Message {renderSortArrow('message')}
+                  </th>
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('documentURL')}>
+                    Related Document {renderSortArrow('documentURL')}
+                  </th>
+                  <th scope="col" className="px-6 py-3" onClick={() => requestSort('status')}>
+                    Status {renderSortArrow('status')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {notifications
+                  .filter(notification => notification.senderID == 'HCS')
+                  .map(notification => (
+                    <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
+                      <td className="px-6 py-4">{getClubName(notification.receiverID)}</td>
+                      <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
+                      <td className="px-6 py-4">{notification.message}</td>
+                      <td className="px-6 py-4">{notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}</td>
+                      <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       {popupMessage && (
