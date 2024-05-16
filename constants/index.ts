@@ -3,6 +3,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import EventIcon from '@mui/icons-material/Event';
 import DescriptionIcon from '@mui/icons-material/Description';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 export const sidebarLinks = [
     {
@@ -30,4 +31,9 @@ export const sidebarLinks = [
         IconComponent: NotificationsIcon,
         route: '/notifications',
     },
+    {
+        label: 'Log Out',
+        IconComponent: ExitToAppIcon,
+        route: '/login'
+    }
 ];
