@@ -28,9 +28,11 @@ export default function RootLayout({
             <Sidebar />
             <div className="flex-1 flex flex-col">
               <Navbar />
-              <main className="mt-20 ml-5 flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto">
                 <SessionProvider>
-                  {children}
+                  <div className='mt-10 pl-20'>
+                    {children}
+                  </div>
                 </SessionProvider>
               </main>
             </div>

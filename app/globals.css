@@ -36,3 +36,18 @@ body {
 .scrollable-event-details::-webkit-scrollbar-thumb:hover {
     background-color: #b3b3b3; /* Darker gray for hover effect */
 }
+
+:root {
+    --navbar-height: 0px;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  main {
+    margin-top: var(--navbar-height);
+  }
+  
