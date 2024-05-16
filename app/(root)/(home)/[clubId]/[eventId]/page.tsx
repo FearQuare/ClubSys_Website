@@ -81,13 +81,13 @@ const EventDetailsPage = () => {
         if (daysRemaining < 0) {
             return <span className='text-gray-400'>Passed</span>;
         } else if (daysRemaining <= 15) {
-            return <span className='text-red-600'>{daysRemaining - 15} days left!</span>;
+            return <span className='text-red-600'>{daysRemaining} days left!</span>;
         } else if (daysRemaining <= 18) {
-            return <span className='text-amber-500'>{daysRemaining - 15} days left!</span>;
+            return <span className='text-amber-500'>{daysRemaining} days left!</span>;
         } else if (daysRemaining <= 20) {
-            return <span className='text-green-700'>{daysRemaining - 15} days left!</span>;
+            return <span className='text-green-700'>{daysRemaining} days left!</span>;
         } else {
-            return <span className='text-green-700'>{daysRemaining - 15} days left!</span>;
+            return <span className='text-green-700'>{daysRemaining} days left!</span>;
         }
     };
 
