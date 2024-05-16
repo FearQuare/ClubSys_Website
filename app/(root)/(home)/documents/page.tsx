@@ -161,7 +161,7 @@ const Documents = () => {
   };
 
   return (
-    <div className='pl-20 mt-10'>
+    <div>
       <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Documents</h1>
       <div className='flex items-center space-x-1'>
         <FormControl sx={{ m: 0, minWidth: 200 }} className='mt-4'>

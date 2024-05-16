@@ -204,7 +204,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className=''>
+    <div>
       <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Notifications</h1>
       <div className='flex flex-row'>
         <div className="flex flex-col min-w-full">

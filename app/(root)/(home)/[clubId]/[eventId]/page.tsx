@@ -209,7 +209,7 @@ const EventDetailsPage = () => {
     };
 
     return (
-        <div className='pl-20 mt-10'>
+        <div>
             <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient'>Event Details: {event?.eventName}</h1>
             <div className="flex flex-row mt-4">
                 <div className="flex flex-col">

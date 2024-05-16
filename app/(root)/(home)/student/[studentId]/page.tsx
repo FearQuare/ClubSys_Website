@@ -108,7 +108,7 @@ const StudentDetailsPage = () => {
     
 
     return (
-        <div className="pl-20 mt-10">
+        <div>
             <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient'>Student Details: {student?.firstName} {student?.lastName}</h1>
             <div className="flex flex-row mt-4">
                 <div className="flex flex-col w-full">

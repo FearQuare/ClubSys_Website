@@ -82,7 +82,7 @@ const ClubDetailsPage = () => {
     if (!club) return <div>No club data available.</div>;
 
     return (
-        <div className='pl-20 mt-10'>
+        <div>
             <div className='flex flex-row'>
                 <div className='flex flex-col text-center ml-10'>
                     <Avatar alt="Club Image" src={club.clubIcon} sx={{ width: 245, height: 245 }} className='shadow-xl border-solid border-2 border-sky-500' />
