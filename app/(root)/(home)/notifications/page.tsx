@@ -137,6 +137,7 @@ const Notifications = () => {
     let sortedEvents = events;
     switch (key) {
       case 'senderID':
+      case 'receiverID':
       case 'date':
       case 'message':
       case 'documentURL':
@@ -360,17 +361,26 @@ const Notifications = () => {
                 </tr>
               </thead>
               <tbody>
-                {notifications
-                  .filter(notification => notification.senderID !== 'HCS')
-                  .map(notification => (
-                    <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
-                      <td className="px-6 py-4">{getClubName(notification.senderID)}</td>
-                      <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
-                      <td className="px-6 py-4">{notification.message}</td>
-                      <td className="px-6 py-4">{notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}</td>
-                      <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
-                    </tr>
-                  ))}
+              {notifications
+                  .filter(notification => notification.senderID !== 'HCS').length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-4">No data to display</td>
+                  </tr>
+                ) : (
+                  notifications
+                    .filter(notification => notification.senderID !== 'HCS')
+                    .map(notification => (
+                      <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
+                        <td className="px-6 py-4">{getClubName(notification.senderID)}</td>
+                        <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
+                        <td className="px-6 py-4">{notification.message}</td>
+                        <td className="px-6 py-4">
+                          {notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}
+                        </td>
+                        <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
+                      </tr>
+                    ))
+                )}
               </tbody>
             </table>
           </div>
@@ -431,16 +441,26 @@ const Notifications = () => {
               </thead>
               <tbody>
                 {notifications
-                  .filter(notification => notification.senderID == 'HCS')
-                  .map(notification => (
-                    <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
-                      <td className="px-6 py-4">{getClubName(notification.receiverID)}</td>
-                      <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
-                      <td className="px-6 py-4">{notification.message}</td>
-                      <td className="px-6 py-4">{notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}</td>
-                      <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
-                    </tr>
-                  ))}
+                  .filter(notification => notification.senderID == 'HCS').length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-4">No data to display</td>
+                  </tr>
+                ) : (
+                  notifications
+                    .filter(notification => notification.senderID == 'HCS')
+                    .map(notification => (
+                      <tr key={notification.id} className='odd:bg-blue-500 odd:text-blue-50 even:bg-blue-50 even:text-blue-500'>
+                        <td className="px-6 py-4">{getClubName(notification.receiverID)}</td>
+                        <td className="px-6 py-4">{notification.date ? format(new Date(notification.date._seconds * 1000), 'PPpp') : 'No Date'}</td>
+                        <td className="px-6 py-4">{notification.message}</td>
+                        <td className="px-6 py-4">
+                          {notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}
+                        </td>
+                        <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
+                      </tr>
+                    ))
+                )}
+
               </tbody>
             </table>
           </div>
