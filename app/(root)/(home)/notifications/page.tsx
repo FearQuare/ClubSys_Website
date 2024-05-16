@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import { Notification, Club, Events, Document } from '@/types/firestore';
 import { format } from 'date-fns';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/firebaseConfig'; // Ensure storage is imported
+import { db, storage } from '@/firebaseConfig';
 import { v4 as uuidv4 } from 'uuid';
 
 const Notifications = () => {
@@ -177,6 +177,21 @@ const Notifications = () => {
       setTimeout(() => setPopupMessage(null), 3000);
     }
   };
+
+  const handleChangeStatus = async (notificationId: string, currentStatus: boolean) => {
+    try {
+      const notificationRef = doc(db, 'Notifications', notificationId);
+      await updateDoc(notificationRef, {
+        status: !currentStatus
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      setPopupMessage({ message: 'Failed to update status', success: false });
+      setTimeout(() => setPopupMessage(null), 3000);
+    }
+  };
+  
 
   if (status === 'loading') {
     return <div>Loading...</div>;
@@ -361,7 +376,7 @@ const Notifications = () => {
                 </tr>
               </thead>
               <tbody>
-              {notifications
+                {notifications
                   .filter(notification => notification.senderID !== 'HCS').length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-4">No data to display</td>
@@ -377,7 +392,14 @@ const Notifications = () => {
                         <td className="px-6 py-4">
                           {notification.documentURL == '' || notification.documentURL == null ? 'No related document' : <a href={notification.documentURL} target='_blank'>View Document</a>}
                         </td>
-                        <td className="px-6 py-4">{notification.status ? 'Read' : 'Unread'}</td>
+                        <td className="px-6 py-4">
+                          <button
+                            className="bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 px-4 border-b-4 border-orange-700 hover:border-orange-500 rounded"
+                            onClick={() => handleChangeStatus(notification.id, notification.status)}
+                          >
+                            {notification.status ? 'Read' : 'Unread'}
+                          </button>
+                        </td>
                       </tr>
                     ))
                 )}
