@@ -17,7 +17,7 @@ type Event = {
     _seconds: number;
     _nanoseconds: number;
   };
-  isApproved: boolean;
+  isApproved: boolean | null;
 }
 
 type Document = {
@@ -114,8 +114,14 @@ const Events = () => {
     },
     {
       field: 'isApproved',
-      headerName: 'Is Approved',
+      headerName: 'Status',
       width: 150,
+      renderCell: (params) => {
+        const value = params.value;
+        if (value === true) return <span>Approved</span>;
+        if (value === false) return <span>Rejected</span>;
+        return <span>Pending</span>;
+      }
     },
     {
       field: 'actions',
@@ -154,27 +160,6 @@ const Events = () => {
       .catch(error => console.error('Failed to fetch documents', error));
   }, [])
 
-  const getRowClassName = (params: GridRowParams) => {
-    const isUploaded = documents.some(document => document.eventID === params.row.id);
-    const event = events.find(event => event.id === params.row.id);
-
-    if (event && event.isApproved !== undefined && event.isApproved !== null) {
-      if (event.isApproved) {
-        return 'bg-green-500';
-      } else {
-        if (!isUploaded) {
-          return 'bg-red-500';
-        }
-        return 'bg-yellow-500';
-      }
-    } else {
-      if(!isUploaded){
-        return 'bg-red-400';
-      }
-      return 'bg-green-300';
-    }
-  }
-
   return (
     <div>
       <h1 className='font-semibold text-3xl bg-gradient-to-t from-color3 to-color4 text-gradient basis-2/5'>Events</h1>
@@ -188,7 +173,6 @@ const Events = () => {
             },
           }}
           pageSizeOptions={[25, 40]}
-          getRowClassName={getRowClassName}
           className='mt-4'
         />
       </div>
