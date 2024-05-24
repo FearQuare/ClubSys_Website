@@ -9,7 +9,6 @@ import Statistics from '@/components/Statistics';
 import { Club, Student } from '@/types/firestore';
 import { db } from '@/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc, getDocs, query, where, collection, writeBatch, arrayRemove, deleteField } from "firebase/firestore";
-import { useRouter } from 'next/navigation';
 
 interface RouteParams {
     clubId?: string;
@@ -150,7 +149,6 @@ const ClubDetailsPage = () => {
 
             await batch.commit();
 
-            useRouter().push('/');
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
