@@ -7,6 +7,9 @@ import BoardMemberList from '@/components/BoardMemberList';
 import ClubEvents from '@/components/ClubEvents';
 import Statistics from '@/components/Statistics';
 import { Club, Student } from '@/types/firestore';
+import { db } from '@/firebaseConfig';
+import { doc, getDoc, updateDoc, deleteDoc, getDocs, query, where, collection, writeBatch, arrayRemove, deleteField } from "firebase/firestore";
+import { useRouter } from 'next/navigation';
 
 interface RouteParams {
     clubId?: string;
@@ -77,6 +80,88 @@ const ClubDetailsPage = () => {
         setVisibleStatistics(true);
     };
 
+    const handleDeleteClub = async () => {
+        if (!clubId) return;
+
+        setLoading(true);
+        setError('');
+
+        const batch = writeBatch(db);
+
+        try {
+            const clubDocRef = doc(db, 'Clubs', clubId);
+            const clubDoc = await getDoc(clubDocRef);
+            if (!clubDoc.exists()) throw new Error('Club not found');
+
+            const clubData = clubDoc.data();
+
+            const memberList = clubData.memberList;
+
+            for (const member of memberList) {
+                const studentDocRef = doc(db, 'Students', member);
+                const studentDoc = await getDoc(studentDocRef);
+                if (studentDoc.exists()) {
+                    const studentData = studentDoc.data();
+
+                    if (studentData.followedClubList?.includes(clubId)) {
+                        batch.update(studentDocRef, { followedClubList: arrayRemove(clubId) });
+                    }
+
+                    if (studentData.joinedClubList?.includes(clubId)) {
+                        batch.update(studentDocRef, { joinedClubList: arrayRemove(clubId) });
+                    }
+
+                    if (studentData.boardMemberOf === clubId) {
+                        batch.update(studentDocRef, { boardMemberOf: deleteField() });
+                    }
+                }
+            }
+
+            const feedDocRef = doc(db, 'Feed', clubId);
+            batch.delete(feedDocRef);
+
+            const interestsSnapshot = await getDocs(collection(db, 'Interests'));
+            interestsSnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.relatedClubs?.includes(clubId)) {
+                    batch.update(doc.ref, { relatedClubs: arrayRemove(clubId) });
+                }
+            });
+
+            const notificationsSnapshot = await getDocs(collection(db, 'Notifications'));
+            notificationsSnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.receiverID === clubId || data.senderID === clubId) {
+                    batch.delete(doc.ref);
+                }
+            });
+
+            const eventsSnapshot = await getDocs(query(collection(db, 'Events'), where('clubID', '==', clubId)));
+            eventsSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+
+            const documentsSnapshot = await getDocs(query(collection(db, 'Documents'), where('clubID', '==', clubId)));
+            documentsSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+
+            batch.delete(clubDocRef);
+
+            await batch.commit();
+
+            useRouter().push('/');
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('An unexpected error occurred');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
     if (!club) return <div>No club data available.</div>;
@@ -95,6 +180,7 @@ const ClubDetailsPage = () => {
                         <Button variant="contained" className={visibleBoardMembers ? 'bg-green-500' : 'bg-blue-400'} onClick={handleBoardMembersClick}>Board Members List</Button>
                         <Button variant="contained" className={visibleClubEvents ? 'bg-green-500' : 'bg-blue-400'} onClick={handleClubEventsClick}>Club Events</Button>
                         <Button variant="contained" className={visibleStatistics ? 'bg-green-500' : 'bg-blue-400'} onClick={handleStatisticsClick}>Statistics</Button>
+                        <Button variant="contained" className='bg-red-600' onClick={handleDeleteClub}>Delete Club</Button>
                     </div>
                 </div>
             </div>
