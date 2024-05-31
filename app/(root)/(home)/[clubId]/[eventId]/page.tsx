@@ -36,13 +36,17 @@ const EventDetailsPage = () => {
     const [event, setEvent] = useState<Events>();
     const [document, setDocument] = useState<Document>();
     const [students, setStudents] = useState<Student[]>([]);
+    const [isActionDisabled, setIsActionDisabled] = useState<boolean>(true);
 
     useEffect(() => {
         if (!eventId) return;
 
         fetch(`/api/events?eventId=${eventId}`)
             .then(res => res.json())
-            .then((data: Events) => setEvent(data))
+            .then((data: Events) => {
+                setEvent(data);
+                setIsActionDisabled(calculateDaysRemaining(data.eventDate) <= 0);
+            })
             .catch(error => console.error('Failed to fetch event', error));
 
         fetch(`/api/students`)
@@ -99,10 +103,24 @@ const EventDetailsPage = () => {
         }
     }
 
+    const calculateDaysRemaining = (timestamp: Timestamp | undefined): number => {
+        if (!timestamp) return 0;
+
+        const currentDate = new Date();
+        const eventDate = new Date(timestamp._seconds * 1000);
+        const timeDiff = eventDate.getTime() - currentDate.getTime();
+        return Math.ceil(timeDiff / (1000 * 3600 * 24));
+    };
+
     const handleApprove = async () => {
         if (!eventId) {
             console.error("Event ID is undefined. Cannot update the document.");
             alert("Event ID is missing. Cannot proceed with approval.");
+            return;
+        }
+
+        if (calculateDaysRemaining(event?.eventDate) <= 0) {
+            alert("The event date has already passed. Cannot approve this event.");
             return;
         }
 
@@ -132,7 +150,12 @@ const EventDetailsPage = () => {
     const handlePending = async () => {
         if (!eventId) {
             console.error("Event ID is undefined. Cannot update the document.");
-            alert("Event ID is missing. Cannot proceed with approval.");
+            alert("Event ID is missing. Cannot proceed with setting to pending.");
+            return;
+        }
+
+        if (calculateDaysRemaining(event?.eventDate) <= 0) {
+            alert("The event date has already passed. Cannot set this event to pending.");
             return;
         }
 
@@ -142,7 +165,7 @@ const EventDetailsPage = () => {
             });
 
             if (response.ok) {
-                alert('Event successfully added to pending!');
+                alert('Event successfully set to pending!');
                 window.location.reload();
             } else {
                 console.error("Error setting event to pending:", response.statusText);
@@ -155,7 +178,12 @@ const EventDetailsPage = () => {
     const handleReject = async () => {
         if (!eventId) {
             console.error("Event ID is undefined. Cannot update the document.");
-            alert("Event ID is missing. Cannot proceed with approval.");
+            alert("Event ID is missing. Cannot proceed with rejection.");
+            return;
+        }
+
+        if (calculateDaysRemaining(event?.eventDate) <= 0) {
+            alert("The event date has already passed. Cannot reject this event.");
             return;
         }
 
@@ -261,10 +289,9 @@ const EventDetailsPage = () => {
                     <div className='rounded-3xl bg-color5 text-center pt-2 pb-6 p-36 shadow-lg'>
                         <p className='mt-5 text-color6 text-xl font-bold'>Change Event Status</p>
                         <ButtonGroup variant="text" aria-label="event-status-buttons" className="mt-4">
-                            <Button onClick={handleApprove} className={`button-base ${event?.isApproved === true ? 'active' : ''}`} disabled={event?.isApproved === true}>Approve</Button>
-                            <Button onClick={handlePending} className={`button-base ${event?.isApproved === null || event?.isApproved === undefined ? 'active' : ''}`} disabled={event?.isApproved === null || event?.isApproved === undefined}>Pending</Button>
-                            <Button onClick={handleReject} className={`button-base ${event?.isApproved === false ? 'active' : ''}`} disabled={event?.isApproved === false}>Reject</Button>
-
+                            <Button onClick={handleApprove} className={`button-base ${event?.isApproved === true ? 'active' : ''}`} disabled={event?.isApproved === true || isActionDisabled}>Approve</Button>
+                            <Button onClick={handlePending} className={`button-base ${event?.isApproved === null || event?.isApproved === undefined ? 'active' : ''}`} disabled={event?.isApproved === null || event?.isApproved === undefined || isActionDisabled}>Pending</Button>
+                            <Button onClick={handleReject} className={`button-base ${event?.isApproved === false ? 'active' : ''}`} disabled={event?.isApproved === false || isActionDisabled}>Reject</Button>
                         </ButtonGroup>
                     </div>
                     <div className="rounded-3xl bg-color5 text-center pt-2 pb-6 p-2 shadow-lg mt-5 max-w-2xl scrollable-event-details" style={{ overflowY: 'auto', height: '19rem' }}>
