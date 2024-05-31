@@ -81,74 +81,22 @@ const ClubDetailsPage = () => {
 
     const handleDeleteClub = async () => {
         if (!clubId) return;
-
+    
         setLoading(true);
         setError('');
-
-        const batch = writeBatch(db);
-
+    
         try {
-            const clubDocRef = doc(db, 'Clubs', clubId);
-            const clubDoc = await getDoc(clubDocRef);
-            if (!clubDoc.exists()) throw new Error('Club not found');
-
-            const clubData = clubDoc.data();
-
-            const memberList = clubData.memberList;
-
-            for (const member of memberList) {
-                const studentDocRef = doc(db, 'Students', member);
-                const studentDoc = await getDoc(studentDocRef);
-                if (studentDoc.exists()) {
-                    const studentData = studentDoc.data();
-
-                    if (studentData.followedClubList?.includes(clubId)) {
-                        batch.update(studentDocRef, { followedClubList: arrayRemove(clubId) });
-                    }
-
-                    if (studentData.joinedClubList?.includes(clubId)) {
-                        batch.update(studentDocRef, { joinedClubList: arrayRemove(clubId) });
-                    }
-
-                    if (studentData.boardMemberOf === clubId) {
-                        batch.update(studentDocRef, { boardMemberOf: deleteField() });
-                    }
-                }
+            const response = await fetch(`/api/clubs/${clubId}`, {
+                method: 'DELETE',
+            });
+    
+            if (response.ok) {
+                alert('Club successfully deleted.');
+                // Optionally redirect or update UI as needed
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message);
             }
-
-            const feedDocRef = doc(db, 'Feed', clubId);
-            batch.delete(feedDocRef);
-
-            const interestsSnapshot = await getDocs(collection(db, 'Interests'));
-            interestsSnapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.relatedClubs?.includes(clubId)) {
-                    batch.update(doc.ref, { relatedClubs: arrayRemove(clubId) });
-                }
-            });
-
-            const notificationsSnapshot = await getDocs(collection(db, 'Notifications'));
-            notificationsSnapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.receiverID === clubId || data.senderID === clubId) {
-                    batch.delete(doc.ref);
-                }
-            });
-
-            const eventsSnapshot = await getDocs(query(collection(db, 'Events'), where('clubID', '==', clubId)));
-            eventsSnapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-
-            const documentsSnapshot = await getDocs(query(collection(db, 'Documents'), where('clubID', '==', clubId)));
-            documentsSnapshot.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-
-            batch.delete(clubDocRef);
-
-            await batch.commit();
-
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
@@ -158,7 +106,7 @@ const ClubDetailsPage = () => {
         } finally {
             setLoading(false);
         }
-    }
+    };    
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;

@@ -146,14 +146,22 @@ const Documents = () => {
 
   const handleDelete = async (id: string, filePath: string) => {
     try {
-      await deleteDoc(doc(db, 'Documents', id));
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filePath }),
+      });
 
-      const fileRef = ref(storage, filePath);
-
-      await deleteObject(fileRef);
-
-      setDocuments(documents.filter((doc) => doc.id !== id));
-      alert('Document successfully deleted.');
+      if (response.ok) {
+        setDocuments(documents.filter((doc) => doc.id !== id));
+        alert('Document successfully deleted.');
+      } else {
+        const errorData = await response.json();
+        console.error('Error deleting document:', errorData.message);
+        alert('Failed to delete document.');
+      }
     } catch (error) {
       console.error('Error deleting document:', error);
       alert('Failed to delete document.');
@@ -200,7 +208,7 @@ const Documents = () => {
           />
         </Button>
         <div className='mt-4'>
-          <TextField id="message" label="Message" variant="outlined" onChange={(event) => setMessage(event.target.value)}/>
+          <TextField id="message" label="Message" variant="outlined" onChange={(event) => setMessage(event.target.value)} />
         </div>
         <Button onClick={uploadFile} className='mt-4'>Submit Upload</Button>
       </div>

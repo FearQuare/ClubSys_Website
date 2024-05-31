@@ -107,47 +107,33 @@ const CreateClub = () => {
 
     const handleSubmit = async () => {
         let isValid = true;
-
+    
         if (!clubName.trim()) {
             setIsClubNameValid(false);
             setAlert({ show: true, severity: 'error', message: 'You cannot leave Club Name field empty!' });
             isValid = false;
         }
-
+    
         if (!selectedAdvisorID) {
             setIsAdvisorValid(false);
             setAlert({ show: true, severity: 'error', message: 'Selecting an Advisor is required.' });
             isValid = false;
         }
-
+    
         if (!selectedInterestID) {
             setIsInterestValid(false);
             setAlert({ show: true, severity: 'error', message: 'Selecting an Interest is required.' });
             isValid = false;
         }
-
+    
         if (!selectedStudentID) {
             setIsPresidentValid(false);
             setAlert({ show: true, severity: 'error', message: 'Selecting a President is required.' });
             isValid = false;
         }
-
+    
         if (!isValid) return;
-
-        const studentRef = doc(db, "Students", selectedStudentID);
-        const studentDoc = await getDoc(studentRef);
-        if (studentDoc.exists() && studentDoc.data().boardMemberOf) {
-            setAlert({ show: true, severity: 'error', message: 'You cannot add this student as a president because this student is already related by other clubs as a board member.' });
-            return;
-        }
-
-        const querySnapshot = await getDocs(query(collection(db, 'Clubs'), where('clubName', '==', clubName.trim())));
-        if (!querySnapshot.empty) {
-            setAlert({ show: true, severity: 'error', message: 'This club name already exists try another name.' });
-            setIsClubNameValid(false);
-            return;
-        }
-
+    
         let imageUrl = null;
         if (image !== '/add-image.png' && editorRef.current) {
             const canvas = editorRef.current.getImageScaledToCanvas();
@@ -168,7 +154,7 @@ const CreateClub = () => {
                 return;
             }
         }
-
+    
         const clubDoc = {
             advisorID: selectedAdvisorID,
             boardMembers: [
@@ -181,44 +167,46 @@ const CreateClub = () => {
             clubDescription,
             clubIcon: imageUrl,
             clubName,
-            memberList: [selectedStudentID]
+            memberList: [selectedStudentID],
+            interestID: selectedInterestID,
         };
-
+    
         try {
-            const docRef = await addDoc(collection(db, "Clubs"), clubDoc);
-            setAlert({ show: true, severity: 'success', message: `Club created with ID: ${docRef.id}` });
-
-            await updateDoc(studentRef, {
-                boardMemberOf: docRef.id,
-                followedClubList: arrayUnion(docRef.id),
-                joinedClubList: arrayUnion(docRef.id)
+            const response = await fetch('/api/clubs/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(clubDoc),
             });
-
-            const interestRef = doc(db, "Interests", selectedInterestID);
-            await updateDoc(interestRef, {
-                relatedClubs: arrayUnion(docRef.id)
-            });
-
-
-            setClubName('');
-            setSelectedAdvisorID('');
-            setSelectedInterestID('');
-            setClubDescription('');
-            setSelectedStudentID('');
-            setImage('/add-image.png');
-            setScale(1);
-            setPosition({ x: 0.5, y: 0.5 });
-            setRotate(0);
-            setBorderRadius(50);
-            setIsClubNameValid(true);
-            setIsAdvisorValid(true);
-            setIsInterestValid(true);
-            setIsPresidentValid(true);
+    
+            if (response.ok) {
+                const { clubId } = await response.json();
+                setAlert({ show: true, severity: 'success', message: `Club created with ID: ${clubId}` });
+    
+                setClubName('');
+                setSelectedAdvisorID('');
+                setSelectedInterestID('');
+                setClubDescription('');
+                setSelectedStudentID('');
+                setImage('/add-image.png');
+                setScale(1);
+                setPosition({ x: 0.5, y: 0.5 });
+                setRotate(0);
+                setBorderRadius(50);
+                setIsClubNameValid(true);
+                setIsAdvisorValid(true);
+                setIsInterestValid(true);
+                setIsPresidentValid(true);
+            } else {
+                const errorData = await response.json();
+                setAlert({ show: true, severity: 'error', message: `Error creating club: ${errorData.message}` });
+            }
         } catch (error) {
-            console.error('Error creating club document in Firestore', error);
+            console.error('Error creating club document', error);
             setAlert({ show: true, severity: 'error', message: 'Error creating club document.' });
         }
-    };
+    };    
 
     return (
         <div>
