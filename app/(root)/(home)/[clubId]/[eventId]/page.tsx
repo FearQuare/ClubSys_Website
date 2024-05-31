@@ -115,17 +115,21 @@ const EventDetailsPage = () => {
             return;
         }
 
-        const eventRef = doc(db, "Events", eventId);
         try {
-            await updateDoc(eventRef, {
-                isApproved: true
+            const response = await fetch(`/api/events/${eventId}/approve`, {
+                method: 'POST',
             });
-            alert('Event successfully accepted!');
-            window.location.reload();
+
+            if (response.ok) {
+                alert('Event successfully accepted!');
+                window.location.reload();
+            } else {
+                console.error("Error approving event:", response.statusText);
+            }
         } catch (error) {
-            console.error("Error updating document: ", error);
+            console.error("Error approving event: ", error);
         }
-    }
+    };
 
     const handlePending = async () => {
         if (!eventId) {
@@ -134,17 +138,21 @@ const EventDetailsPage = () => {
             return;
         }
 
-        const eventRef = doc(db, "Events", eventId);
         try {
-            await updateDoc(eventRef, {
-                isApproved: null
+            const response = await fetch(`/api/events/${eventId}/pending`, {
+                method: 'POST',
             });
-            alert('Event successfully added to pending!');
-            window.location.reload();
+
+            if (response.ok) {
+                alert('Event successfully added to pending!');
+                window.location.reload();
+            } else {
+                console.error("Error setting event to pending:", response.statusText);
+            }
         } catch (error) {
-            console.error("Error updating document: ", error);
+            console.error("Error setting event to pending: ", error);
         }
-    }
+    };
 
     const handleReject = async () => {
         if (!eventId) {
@@ -153,17 +161,21 @@ const EventDetailsPage = () => {
             return;
         }
 
-        const eventRef = doc(db, "Events", eventId);
         try {
-            await updateDoc(eventRef, {
-                isApproved: false
+            const response = await fetch(`/api/events/${eventId}/reject`, {
+                method: 'POST',
             });
-            alert('Event successfully rejected!');
-            window.location.reload();
+
+            if (response.ok) {
+                alert('Event successfully rejected!');
+                window.location.reload();
+            } else {
+                console.error("Error rejecting event:", response.statusText);
+            }
         } catch (error) {
-            console.error("Error updating document: ", error);
+            console.error("Error rejecting event: ", error);
         }
-    }
+    };
 
     const displayStudentName = (studentID: string) => {
         let studentName = '';
